@@ -1,0 +1,241 @@
+// This import applies a global reset to any page that imports this stylesheet.
+@import "blueprint/reset";
+
+// To configure blueprint, edit the partials/base.sass file.
+@import "partials/base";
+
+// Import all the default blueprint modules so that we can access their mixins.
+@import "blueprint";
+
+// Import the non-default scaffolding module.
+@import "blueprint/scaffolding";
+
+$blueprint-font-size: 16px;
+$warm: #ffa400;
+$bg-col: #6A92D4;
+$green: darken(#57b42c, 8);
+$blue: adjust_hue($green, 110);
+$red: adjust_hue($green, -100);
+
+$fb-font-weight: normal;
+$fb-gradient-style: matte;
+
+@import "compass/utilities";
+@import "fancy-buttons";
+@import "compass/css3";
+@import "compass/layout/sticky-footer";
+
+//@include sticky-footer(64px);
+// To generate css equivalent to the blueprint css but with your
+// configuration applied, uncomment:
+// @include blueprint
+
+// If you are doing a lot of stylesheet concatenation, it is suggested
+// that you scope your blueprint styles, so that you can better control
+// what pages use blueprint when stylesheets are concatenated together.
+body.bp {
+  @include blueprint-typography(true);
+  @include blueprint-utilities;
+  @include blueprint-debug;
+  @include blueprint-interaction;
+  // Remove the scaffolding when you're ready to start doing visual design.
+  // Or leave it in if you're happy with how blueprint looks out-of-the-box
+}
+
+form.bp {
+  @include blueprint-form;
+  // You'll probably want to remove the scaffolding once you start styling your site.
+  @include blueprint-scaffolding; }
+
+// Page layout can be done using mixins applied to your semantic classes and IDs:
+body.two-col {
+  #container {
+    @include container; }
+  #header, #footer {
+    @include column($blueprint-grid-columns); }
+  #sidebar {
+    // One third of the grid columns, rounding down. With 24 cols, this is 8.
+    $sidebar-columns: floor($blueprint-grid-columns / 3);
+    @include column($sidebar-columns); }
+  #content {
+    // Two thirds of the grid columns, rounding up.
+    // With 24 cols, this is 16.
+    $content-columns: ceil(2 * $blueprint-grid-columns / 3);
+    // true means it's the last column in the row
+    @include column($content-columns, true); }
+}
+
+body.vm {
+    @include blueprint(true);
+    @include container;
+    overflow: scroll;
+	td {
+		padding: 0 0 0 1em;
+		line-height: normal;
+	}
+}
+
+#header {
+	@include column(24, true);
+	#logo {
+		@include column(8);
+        a {
+            text-decoration: none;
+        }
+	}
+	#header-sidebar {
+		@include float-right;
+		@include prepend-top(1em);
+		ul {
+			@include horizontal-list;
+            @include border-radius(5px);
+            @include fancy-button-colors-matte(lighten($blue, 20));
+            li {
+                padding: 0;
+            }
+			li:not(:last-child) a {
+				border-right: 1px solid darken($blue, 10);
+			}
+			li:not(:first-child) a {
+				border-left: 1px solid lighten($blue, 10);
+			}
+			a {
+                @include fancy-button($blue, 14px, 0);
+            }
+		}
+	}
+}
+
+$base-rhythm-unit: 1.5em;
+
+#opsbar {
+	@include column(24, true);
+    ul {
+        @include horizontal-list;
+        padding: 1em 0 1em 0;
+        a.button {
+            @include fancy-button(#bbb);
+        }
+        a.link {
+            display: block;
+            padding-top: 0.75em;
+        }
+    }
+}
+
+#linux-container {
+	@include column(24, true);
+	position: absolute;
+	top: 0;
+	left: 0;
+	z-index: 1;
+    table {
+        border: 2px solid #ccc;
+    }
+}
+
+#elfinder-container {
+	@include column(24, true);
+	position: absolute;
+	top: 0;
+	left: 0;
+	z-index: 2;
+}
+
+#fb-container {
+	@include column(24, true);
+	position: relative;
+    margin-top: 0.75em;
+}
+
+div.fileinputs {
+    @include column(5);
+    position: relative;
+}
+
+div.fakefile {
+    position: absolute;
+    top: 0px;
+    left: 0px;
+    z-index: 1;
+}
+
+input.file {
+    position: relative;
+    text-align: right;
+    @include opacity(0.0);
+    z-index: 2;
+}
+
+input.button {
+    width: 100%;
+    text-align: center;
+    @include fancy-button(#bbb, 14px);
+}
+
+#geekbar {
+    @include column(5, true);
+    @include float-right;
+    position: relative;
+    a.button {
+        display: block;
+        position: absolute;
+        top: 0;
+        right: 0;
+        text-align: center;
+        @include fancy-button(#bbb, 14px);
+    }
+
+    #slider-container {
+        position: absolute;
+        visibility: hidden;
+        top: 0;
+        right: 0;
+        width: 100%;
+        font-size: smaller;
+        text-align: right;
+        span.slider {
+            display: inline-block;
+            width: span(3);
+        }
+        td {
+            padding: 0;
+        }
+    }
+
+} 
+
+#files_list {
+    @include column(13);
+    @include border-radius(5px);
+    p {
+        margin: 0;
+    }
+}
+
+#msg {
+    text-align: center;
+    font-size: large;
+    @include border-radius(5px);
+}
+
+#footer {
+    ul {
+        @include horizontal-list;
+    }
+    position: fixed;
+    bottom: 0;
+    z-index:99;
+}
+
+td.term {
+    font-family: courier,fixed,swiss,monospace,sans-serif;
+    font-size: 14px;
+    color: #000;
+    background: #eee;
+}
+
+td.termReverse {
+    color: #000000;
+    background: #00ff00;
+}
