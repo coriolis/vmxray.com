@@ -1,6 +1,6 @@
 /*!
  * elFinder - file manager for web
- * Version 2.0 beta (2011-09-09)
+ * Version 2.0 beta (2011-10-03)
  * http://elfinder.org
  * 
  * Copyright 2009-2011, Studio 42
@@ -772,6 +772,9 @@ window.elFinder = function(node, opts) {
 					case 'parsererror': 
 						error = ['errResponse', 'errDataNotJSON'];
 						break;
+                    case 'open':
+                        error = ['errUsupportType'];
+                        break;
 					default:
 						if (xhr.status == 403) {
 							error = ['errConnect', 'errAccess'];
@@ -881,7 +884,6 @@ window.elFinder = function(node, opts) {
 			});
 		}
 		
-		dfrd.abort = xhr.abort;
 		return dfrd;
 	};
 	
