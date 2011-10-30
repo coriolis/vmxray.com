@@ -46,10 +46,14 @@ function updateFinder() {
 }
 
 function setupListeners() {
+    if(!window.FileReader) {
+        $('#msg p.status').replaceWith('<p class="status">Sorry! VMXRay uses bleeding edge HTML5 features, and will not work on your browser. Browsers known to work include Google Chrome 14, Firefox 6 and Opera 11.</p>');
+        return;
+    }
     term_start();
     start();
     JL.readylistener = function() {
-        $('#msg p.status').replaceWith('<p class="status">Appliance ready. Let\'s go exploring!</p>');
+        $('#msg p.status').replaceWith('<p class="status">Appliance ready. Let\'s go explore!</p>');
         updateFinder();
     }
     //$('#slider-container').hide();
