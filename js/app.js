@@ -56,7 +56,7 @@ function setupListeners() {
         $('#msg p.status').replaceWith('<p class="status">Appliance ready. Let\'s go explore!</p>');
         updateFinder();
     }
-    $('table').detach().appendTo('#linux-container');
+    $('table').detach().prependTo('#linux-container');
     $('#slider').slider({
         from: 0,
         to: 11,

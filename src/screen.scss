@@ -229,6 +229,11 @@ input.button {
     ul {
         @include horizontal-list;
     }
+    p {
+        @include column(24, true);
+        text-align: right;
+        font-size: 12px;
+    }
     position: fixed;
     bottom: 0;
     z-index:99;
