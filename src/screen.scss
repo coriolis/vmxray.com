@@ -134,6 +134,10 @@ $base-rhythm-unit: 1.5em;
     }
 }
 
+body > table {
+    visibility: hidden;
+}
+
 #elfinder-container {
 	@include column(24, true);
 	position: absolute;
@@ -149,12 +153,12 @@ $base-rhythm-unit: 1.5em;
 }
 
 div.fileinputs {
-    @include column(8);
+    @include column(7);
     position: relative;
 }
 
 #social-share {
-    @include column(10);
+    @include column(11);
 }
 
 div.fakefile {
@@ -207,6 +211,12 @@ input.button {
         }
     }
 
+    p {
+        text-align: center;
+        font-size: 10px;
+        color: #bbb;
+        padding-top: 16px;
+    }
 } 
 
 #msg {

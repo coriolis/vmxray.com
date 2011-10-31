@@ -56,8 +56,6 @@ function setupListeners() {
         $('#msg p.status').replaceWith('<p class="status">Appliance ready. Let\'s go explore!</p>');
         updateFinder();
     }
-    //$('#slider-container').hide();
-    //$('#files_list').hide();
     $('table').detach().appendTo('#linux-container');
     $('#slider').slider({
         from: 0,
@@ -67,12 +65,8 @@ function setupListeners() {
         onstatechange: handleRange,
         skin: 'round'
     });
-    $('a.button').click(function() {
-        $('a.button').fadeOut('slow', function() {
-            $('a.button').remove();
-            $('#slider-container').css('visibility', 'visible').fadeIn();
-        })
-    });
+    $('#slider-container').css('visibility', 'visible').fadeIn();
+    $('#geekbar > p').replaceWith('<p>Geek Level</p>');
 
     function handleRange(val) {
         $('#linux-container').css('opacity', val / 11.0);
