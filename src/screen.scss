@@ -149,8 +149,12 @@ $base-rhythm-unit: 1.5em;
 }
 
 div.fileinputs {
-    @include column(5);
+    @include column(8);
     position: relative;
+}
+
+#social-share {
+    @include column(10);
 }
 
 div.fakefile {
@@ -205,14 +209,6 @@ input.button {
 
 } 
 
-#files_list {
-    @include column(13);
-    @include border-radius(5px);
-    p {
-        margin: 0;
-    }
-}
-
 #msg {
     text-align: center;
     font-size: large;
@@ -239,3 +235,4 @@ td.termReverse {
     color: #000000;
     background: #00ff00;
 }
+
