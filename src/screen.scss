@@ -225,10 +225,7 @@ input.button {
     @include border-radius(5px);
 }
 
-#footer {
-    ul {
-        @include horizontal-list;
-    }
+#fixed-footer {
     p {
         @include column(24, true);
         text-align: right;
@@ -237,6 +234,19 @@ input.button {
     position: fixed;
     bottom: 0;
     z-index:99;
+}
+
+#footer {
+    p {
+        @include column(24, true);
+        text-align: right;
+        font-size: 12px;
+    }
+}
+
+h2 sub {
+    font-size: 16px;
+    color: $red;
 }
 
 td.term {
