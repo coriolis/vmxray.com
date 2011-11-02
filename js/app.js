@@ -151,12 +151,12 @@ function start()
     jshell.pc = pc;
     pc.jshell = jshell;
 
-    pc.load_binary("vmlinux26.bin", 0x00100000);
+    pc.load_binary("vmlinux26.tif", 0x00100000);
 
-    initrd_size = pc.load_binary("rootfs.ext2", 0x00400000);
+    initrd_size = pc.load_binary("rootfs.tif", 0x00400000);
 
     start_addr = 0x10000;
-    pc.load_binary("linuxstart.bin", start_addr);
+    pc.load_binary("linuxstart.tif", start_addr);
 
     /* set the Linux kernel command line */
     /* Note: we don't use initramfs because it is not possible to
