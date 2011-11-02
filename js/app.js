@@ -5,6 +5,7 @@ function updateFinder() {
     if (JL.files && JL.files.length) {
 
         $("#elfinder").remove();
+        $("#msg").remove();
         $('<div id="elfinder"></div>').appendTo('#elfinder-container');
         $('#elfinder').elfinder({
             // lang: 'ru',             // language (OPTIONAL)
