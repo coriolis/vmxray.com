@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>VMXRay</title>
+    <link rel="stylesheet" type="text/css" media="screen" href="css/screen.css">
+</head>
+
+<body class="vm">
+<div id="header">
+	<div id="logo">
+	<h2><a href="/">VMXRay</a></h2>
+	</div>
+	<div id="header-sidebar"><ul>
+		<li><a href="/">Home</a></li>
+		<li><a class="active" href="faq.html">FAQ</a></li>
+		<li><a href="about.html">About</a></li>
+	</ul></div>
+</div>
+<div class="faq">
+<h2> Frequently Asked Questions </h2>
+<h4>What can I use VMXRay for?</h4>
+<ol>
+    <li> Say you have a VMWare disk image (.vmdk file) or a CD image (.iso file) on your desktop and would like to look at the files inside. Perhaps there are a couple of files you would like to extract. You could start the virtual machine to access its files (What was the damn administrator password again?), or install a bunch of utilities to let you mount the image as a filesystem. Or, you could use VMXray, which, being a pure web app, requires no installation at all</li>
+    <li> You could also look at other filesystem dumps (FAT, ext2, NTFS) in various formats (qcow2, raw). We haven't tested all combinations.</li>
+    <li> In theory, you can recover deleted photos from raw dumps of your camera's SD card. It might be a little slow, though.</li>
+</ol>
+
+<h4>What about the privacy of my data?</h4>
+<p> <b>No data from your files is ever sent over the network.</b> The privacy of your data is assured for the simple reason that it never leaves your machine. VMXRay does all its magic completely inside your browser.</p>
+
+<h4 id="browser-support">What browsers are supported?</h4>
+<p> VMXRay uses bleeding edge HTML5 features like the FileReader API to access local files. Not all browsers support it, and even in those which do, API support is evolving. Currently, we know of the following browsers on which browsing of images and preview of files work:
+<ol>
+<li> Google Chrome 13+ (Mac OS X, Ubuntu) </li>
+<li> Firefox 7+ (Mac OS X, Ubuntu)</li>
+<li> Opera 11+ (Mac OS X)</li>
+</ol>
+Downloading of files works properly only on Chrome.
+</p>
+
+<h4>Is it free?</h4>
+<p> The short answer is "yes". The longer answer is <a href="about.html">here</a>.</p>
+
+<h4>How does it work?</h4>
+<p> Briefly,
+    <img src="images/vmxray-block.png" height="300" style="float: right"></img>
+    <ul>
+        <li>A Linux virtual machine runs inside your browser. This is <a href="http://bellard.org">Fabrice Bellard's</a> <a href="http://bellard.org/jslinux/tech.html">JSLinux</a>, an x86 emulator implemented in Javascript. We use a custom kernel and root filesystem.
+        <li> We have developed a special filesystem, <a href="https://github.com/coriolis/jlfs">jlfs</a>, runs on the Linux virtual machine, and its browser-side counterpart (jlfs.js) enable Linux applications to access files via the HTML5 FileReader API. </li>
+        <li> A <a href="https://github.com/coriolis/sleuthkit">fork</a> of <a href="http://www.sleuthkit.org/">Sleuthkit</a>, a filesystem forensics tool is run on the Linux virtual machine to provide directory and file data.</li>
+        <li> A <a href="https://github.com/coriolis/elFinder">fork</a> of the beautiful <a href="http://elrte.org/elfinder">elFinder</a> is used to present a folder interface to the file system</li>
+        <li> There is no server-side processing; everything happens within the browser. </li>
+    </ul>
+</p>
+<div id="disqus_thread"></div>
+<a href="http://disqus.com" class="dsq-brlink">blog comments powered by <span class="logo-disqus">Disqus</span></a>
+<div id="footer">
+<p>&copy 2011 <a href="http://www.coriolis.co.in">Coriolis Technologies</a></p>
+</div>
+<script type="text/javascript">
+    var disqus_shortname = 'vmxray';
+    (function() {
+        var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+        dsq.src = 'http://' + disqus_shortname + '.disqus.com/embed.js';
+        (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+    })();
+</script>
+<noscript>Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+</body>
+</html>
