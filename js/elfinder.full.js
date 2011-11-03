@@ -1,6 +1,6 @@
 /*!
  * elFinder - file manager for web
- * Version 2.0 beta (2011-10-03)
+ * Version 2.0 beta (2011-11-03)
  * http://elfinder.org
  * 
  * Copyright 2009-2011, Studio 42
@@ -7783,9 +7783,21 @@ elFinder.prototype.commands.open = function() {
             })
             .done(function(name) {
                 return function(data) {
-                    var blob = new BlobBuilder();
-                    blob.append(data.content);
-                    var fileSaver = saveAs(blob.getBlob(), name);
+                    if (window.ArrayBuffer && window.Uint8Array) {
+                        var blob = new BlobBuilder(),
+                            len = data.content.length,
+                            i, arr = new ArrayBuffer(len),
+                            arr_bytes = new Uint8Array(arr);
+                        for (i = 0; i < len; i++) {
+                            arr_bytes[i] = data.content.charCodeAt(i) & 0xff;
+                        }
+                        blob.append(arr);
+                    } else {
+                        /* Binary files won't work here. Oh well */
+                        var blob = new BlobBuilder();
+                        blob.append(data.content);
+                    }
+                    saveAs(blob.getBlob(), name);
                 };
             }(file.name))
             .fail(function(error) {

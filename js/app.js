@@ -46,8 +46,13 @@ function updateFinder() {
     }
 }
 
+function testRequiredFeatures() {
+    /* Ought to use Modernizr */
+    return window.FileReader;
+}
+
 function setupListeners() {
-    if(!window.FileReader) {
+    if(!testRequiredFeatures()) {
         $('#msg p.status').replaceWith('<p class="status">Sorry! VMXRay uses bleeding edge HTML5 features, and will not work on your browser. Browsers known to work include Google Chrome 14, Firefox 6 and Opera 11.</p>');
         return;
     }
