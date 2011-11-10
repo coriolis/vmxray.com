@@ -219,7 +219,7 @@ function setupListeners() {
         skin: 'round'
     });
     $('#slider-container').css('visibility', 'visible').fadeIn();
-    $('#geekbar > p').replaceWith('<p>Geek Level</p>');
+    $('#geekbar > p').replaceWith('<p>Under the hood &rarr;</p>');
 
     function handleRange(val) {
         $('#linux-container').css('opacity', val / 11.0);
