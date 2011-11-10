@@ -323,6 +323,7 @@ function EFBridge() {
 
 EFBridge.CACHE_FILEDATA_MAX = 1024 * 100;
 EFBridge.sleuthkit_opts = {vmdk: '-i QEMU -o 63', raw: '-o 63'}
+EFBridge.filter_entries = ['$OrphanFiles'];
 
 EFBridge.prototype.cmd = function(options) {
     Util.Debug('>> transport send ' + JSON.stringify(options.data));
@@ -383,6 +384,16 @@ EFBridge.prototype.opendone = function(target, dfrd, result) {
     for (var i = 0; i < lines.length; i++) {
         var m = /(.)\/(\w)\s+([^:]+):\t(.*?)\t(.*?)\t(.*?)\t(.*?)\t(.*?)\t(\d+)\t(\d+)\t(\d+)/.exec(lines[i]);
         if (m) {
+            var filter = false;
+            for (var j = 0; j < EFBridge.filter_entries.length; j++) {
+                if (m[4] == EFBridge.filter_entries[j]) {
+                    filter = true;
+                    break;
+                }
+            }
+            if (filter) {
+                continue;
+            }
             if (m[4] == ".") {
                 if (target == 'ROOT') {
                     cwd.hash = 'h' + m[3];
