@@ -353,6 +353,10 @@ EFBridge.prototype.parents = function(hash) {
 			dir,
             dfrd = $.Deferred();
 		
+        if (!(hash in this.cache)) {
+            dfrd.reject('orphan');
+            return dfrd;
+        }
         hash = this.cache[hash].phash;
         while (hash && (dir = this.cache[hash])) {
             parents.unshift(dir.cwd);
@@ -483,7 +487,7 @@ EFBridge.prototype.open = function(target) {
         .done(this.opendone.bind(this, target, dfrd))
         .fail(function(df) {
             return function(status) {
-                df.reject(df, 'open');
+                df.reject(df, status);
             }
         }(dfrd));
     dfrd.abort = jshd.abort;
