@@ -41,7 +41,8 @@ function updateFinder() {
             syncOnFail:false,
             sync: 1000000,
             debug: true,
-            rememberLastDir: false
+            rememberLastDir: false,
+            allowShortcuts: false
         }).elfinder('instance');
     }
 }
