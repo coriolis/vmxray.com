@@ -39,7 +39,12 @@
 Downloading of files works properly only on Chrome.
 </p>
 <h4>What file formats are supported?</h4>
-<p> There are two formats to be aware of - the disk image format and the filesystem/volume manager. The unhelpful answer is: whatever disk image format is supported by QEMU and whatever filesystem format is supported by sleuthkit. TBD: A list of actual formats supported.</p>
+<p> There are two formats to be aware of - the disk image format and the filesystem/volume manager. The unhelpful answer is: whatever disk image format is supported by QEMU and whatever filesystem format is supported by sleuthkit. A partial list of formats known to work is given below.
+    <ul><li><b>Disk image formats:</b> Raw, VMDK (single file VMWare4), ISO.</li>
+    <li><b>Filesystems:</b> ext2, FAT, NTFS.</li>
+    </ul>
+Popular formats which don't work yet include multi-file VMDKs, Linux filesystems on top of LVM. We hope to support many more in future.
+</p>
 <h4 id="slow">Why is it so slow?</h4>
 <p> Actually, it is shockingly fast :) Think about it: an x86 emulator <i>in Javascript</i> booting a modern Linux kernel in under 10 seconds! Moore's law and Fabrice Bellard FTW!</p>
 <p> But yes, moving data in and out of JSLinux is slow in wallclock terms. <a href="https://github.com/coriolis/jlfs">jlfs</a> transfers data at around 420 KB/sec. Previewing and saving files are the slowest operations, since they require a roundtrip: image data goes into JSLinux, file data comes out.</p>
