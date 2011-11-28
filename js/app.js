@@ -3,7 +3,6 @@ function updateFinder() {
         return;
     }
     if (JL.files && JL.files.length) {
-
         $("#elfinder").remove();
         $("#msg").remove();
         $('<div id="elfinder"></div>').appendTo('#elfinder-container');
@@ -16,6 +15,9 @@ function updateFinder() {
                 },
                 send: function(options) {
                     return pc.jshell.efbridge.cmd(options);
+                },
+                upload: function(options) {
+                    return false;
                 }
             },
             uiOptions: {
@@ -39,10 +41,11 @@ function updateFinder() {
                 group: ['open']
             },
             syncOnFail:false,
-            sync: 1000000,
+            sync: 0,
             debug: true,
             rememberLastDir: false,
-            allowShortcuts: false
+            allowShortcuts: false,
+            dragUpload: false
         }).elfinder('instance');
     }
 }
@@ -227,40 +230,51 @@ function setupListeners() {
         $('#elfinder-container').css('opacity', (11.0 - val) / 11.0);
     }
         
+    function setFiles(files) {
+        var base_vmdk = -1;
+        for (var i = 0, f; f = files[i]; i++) {
+            JL.files[i] = f;
+            if (f.name.match(/\.vmdk/i) && !f.name.match(/\-s\d{3}\.vmdk/i)) {
+                base_vmdk = i;
+            }
+        }
+        if (JL.files.length > 1 && base_vmdk != -1) {
+            /* only supported case now is multi-file vmdk */
+            var tmp = JL.files[0];
+            JL.files[0] = JL.files[base_vmdk];
+            JL.files[base_vmdk] = tmp;
+        }
+    }
+
     function handleFormFileSelect(evt) {
-        var files = evt.target.files; // FileList object
-    
-        // files is a FileList of File objects. List some properties.
-        var output = [];
-       // $('#files_list').html('<p>Exploring ' + files[0].name + '</p>').fadeIn();
-       $('<p>Exploring ' + files[0].name + '..</p>').appendTo($('#msg'));
-        JL.files = files;
+        evt.stopPropagation();
+        evt.preventDefault();
+        setFiles(evt.target.files);
+        $('<p>Exploring ' + JL.files[0].name + '..</p>').appendTo($('#msg'));
         updateFinder();
-      }
-      $('#files_input').change(handleFormFileSelect);
+    }
 
     function handleFileSelect(evt) {
         evt.stopPropagation();
         evt.preventDefault();
-    
-        var files = evt.dataTransfer.files; // FileList object.
-    
-        // files is a FileList of File objects. List some properties.
-        var output = [];
-        for (var i = 0, f; f = files[i]; i++) {
-          output.push('<li><strong>', f.name, '</strong> (', f.type || 'n/a', ') - ',
-                      f.size, ' bytes, last modified: ',
-                      f.lastModifiedDate.toLocaleDateString(), '</li>');
-        }
-        document.getElementById('files_list').innerHTML = '<ul>' + output.join('') + '</ul>';
-        JL.files = files;
+        setFiles(evt.dataTransfer.files);
+        $('<p>Exploring ' + JL.files[0].name + '..</p>').appendTo($('#msg'));
         updateFinder();
     }
 
     function handleDragOver(evt) {
         evt.stopPropagation();
         evt.preventDefault();
+        evt.dataTransfer.dropEffect = 'copy';
     }
+
+    $('#files_input').change(handleFormFileSelect);
+    document.getElementById('linux-container').addEventListener('drop', handleFileSelect, false);
+    document.getElementById('linux-container').addEventListener('dragover', handleDragOver, false);
+    document.getElementById('elfinder-container').addEventListener('drop', handleFileSelect, false);
+    document.getElementById('elfinder-container').addEventListener('dragover', handleDragOver, false);
+    document.getElementById('msg').addEventListener('drop', handleFileSelect, false);
+    document.getElementById('msg').addEventListener('dragover', handleDragOver, false);
 }
 
 /*
