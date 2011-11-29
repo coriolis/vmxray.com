@@ -53,6 +53,7 @@ Popular formats which don't work yet include ext4 and Linux filesystems on top o
 <p> Actually, it is shockingly fast :) Think about it: an x86 emulator <i>in Javascript</i> booting a modern Linux kernel in under 10 seconds! Moore's law and Fabrice Bellard FTW!</p>
 <p> But yes, moving data in and out of JSLinux is slow in wallclock terms. <a href="https://github.com/coriolis/jlfs">jlfs</a> transfers data at around 420 KB/sec. Previewing and saving files are the slowest operations, since they require a roundtrip: image data goes into JSLinux, file data comes out.</p>
 <p> Speed also depends on the JS engine, browser and platform. Chrome on Mac OS appears to be the fastest. </p>
+<p> Sleuthkit's implementation for some formats performs very slowly in a resource-starved environment like ours, though it does perfectly well in a standard x86 environment. This leads to, for instance, ISO images with a large number of files taking very long to be read. We plan to improve this in future.
 <h4> It doesn't make progress beyond "Starting Linux web appliance" / It gets stuck indefinitely at "Opening folder"</h4>
 <p> It is <a href="#slow">slow</a>, but if there is no progress for a minute or more, it is likely a bug somewhere, or browser incompatibility. Look at the error console on the browser. Send us a screenshot of the page and the error console, or better still, a fix :) </p>
 <h4>Is it free?</h4>
