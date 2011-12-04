@@ -531,7 +531,7 @@ EFBridge.prototype.get = function(target) {
     var image = JL.files[0].name;
     var ext = image.slice(image.lastIndexOf('.') + 1);
     var opt = EFBridge.sleuthkit_opts[ext.toLowerCase()] || '';
-    var cmd = 'slt -c -O /dev/clipboard' + opt + ' -I ' + target.slice(1); 
+    var cmd = 'slt -c -O /dev/clipboard ' + opt + ' -I ' + target.slice(1); 
     cmd += ' /mnt/' + image.replace(/ /g, "\\ ");
 
     //Util.Debug('>>EFB get ' + cmd);
