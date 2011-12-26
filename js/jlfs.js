@@ -664,7 +664,7 @@ function osinfo_convert(slt)
             osinfo['rows'].push(['Type', info['CurrentType']]);
         }
         if (info['RegisteredOrganization']) {
-            osinfo['rows'].push(['RegisteredOrganization', info['RegisteredOrganization']]);
+            osinfo['rows'].push(['Registered Organization', info['RegisteredOrganization']]);
         }
         if (info['RegisteredOwner']) {
             osinfo['rows'].push(['Registered Owner', info['RegisteredOwner']]);
