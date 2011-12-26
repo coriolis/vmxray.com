@@ -24,7 +24,8 @@ function updateFinder() {
                 toolbar: [
                     ['back', 'forward'],
                     ['info', 'open', 'quicklook'],
-                    ['view', 'help']
+                    ['view', 'help'],
+                    ['osinfo']
                 ],
                 tree: {
                     openRootOnLoad: true,

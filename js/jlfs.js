@@ -501,6 +501,9 @@ EFBridge.prototype.getdone = function(target, dfrd, result) {
         dfrd.reject(dfrd, 'No result from get');
         return;
     }
+    if (target == 'osinfo') {
+        result = osinfo_convert(result);
+    }
     if (result.length < EFBridge.CACHE_FILEDATA_MAX) {
         this.cache[target].data = result;
     }
@@ -510,6 +513,11 @@ EFBridge.prototype.getdone = function(target, dfrd, result) {
 
 EFBridge.prototype.get = function(target) {
     var dfrd = $.Deferred();
+ 
+    if (target == 'osinfo' && !this.cache[target]) {
+        var h = {name: "osinfo", hash: "osinfo", phash: "", date: "30 Jan 2010 14:25", mime: "text/html", size: 1024, read: 1, write: 1, locked: 0, volumeid: JL.files[0].name};
+        this.cache[target] = $.extend(true, {}, h);
+    }
 
     var ct = this.cache[target];
     if (!ct || ct.mime == 'directory') {
@@ -527,11 +535,13 @@ EFBridge.prototype.get = function(target) {
         dfrd.resolve({content: ''});
         return dfrd;
     }
+ 
+    var image = JL.files[0].name,
+        ext = image.slice(image.lastIndexOf('.') + 1),
+        opt = EFBridge.sleuthkit_opts[ext.toLowerCase()] || '',
+        gopt = (target == 'osinfo') ? '-t' : '-c -I ' + target.slice(1);
 
-    var image = JL.files[0].name;
-    var ext = image.slice(image.lastIndexOf('.') + 1);
-    var opt = EFBridge.sleuthkit_opts[ext.toLowerCase()] || '';
-    var cmd = 'slt -c -O /dev/clipboard ' + opt + ' -I ' + target.slice(1); 
+    var cmd = 'slt ' + gopt + ' -O /dev/clipboard ' + opt; 
     cmd += ' /mnt/' + image.replace(/ /g, "\\ ");
 
     //Util.Debug('>>EFB get ' + cmd);
@@ -629,3 +639,41 @@ EFBridge.prototype.mime_map = {
 		ogm   : 'video/ogg'
 }
 
+function osinfo_convert(slt)
+{
+    var lines,
+        info = {},
+        osinfo = {},
+        output = "";
+    lines = slt.split('\n');
+    for (var i = 0; i < lines.length; i++) {
+        var line = lines[i].split('|');
+        if (line.length == 2) {
+            info[line[0]] = line[1];
+        }
+    }
+
+    if (info['CSDVersion']) {
+        /* Windows */
+        osinfo['title'] = (info['ProductName']) ? info['ProductName'] : "Windows";
+        osinfo['rows'] = new Array();
+        if (info['CSDVersion']) {
+            osinfo['rows'].push(['Version', info['CSDVersion']]);
+        }
+        if (info['CurrentType']) {
+            osinfo['rows'].push(['Type', info['CurrentType']]);
+        }
+        if (info['RegisteredOrganization']) {
+            osinfo['rows'].push(['RegisteredOrganization', info['RegisteredOrganization']]);
+        }
+        if (info['RegisteredOwner']) {
+            osinfo['rows'].push(['Registered Owner', info['RegisteredOwner']]);
+        }
+    } else {
+        osinfo['title'] = "Unknown OS";
+        $.each(info, function(k, v) {
+            osinfo['rows'].push([k, v]);
+        });
+    }
+    return JSON.stringify(osinfo);
+}
