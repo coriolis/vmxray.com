@@ -639,6 +639,26 @@ EFBridge.prototype.mime_map = {
 		ogm   : 'video/ogg'
 }
 
+//array sort function
+function sort_osinfo(a, b) {
+
+    try {
+
+        if(a[0] < b[0])
+            return -1;
+        else if(a[0] > b[0])
+            return 1;
+        else
+            return 0;
+    }
+    catch(err) {
+        //nothing to do
+    }
+
+    return a - b;
+}
+
+
 function osinfo_convert(slt)
 {
     var lines,
@@ -653,10 +673,12 @@ function osinfo_convert(slt)
         }
     }
 
-    if (info['CSDVersion']) {
+    osinfo['rows'] = new Array();
+
+    if (info['ProductName']) {
         /* Windows */
         osinfo['title'] = (info['ProductName']) ? info['ProductName'] : "Windows";
-        osinfo['rows'] = new Array();
+        /*
         if (info['CSDVersion']) {
             osinfo['rows'].push(['Version', info['CSDVersion']]);
         }
@@ -669,11 +691,15 @@ function osinfo_convert(slt)
         if (info['RegisteredOwner']) {
             osinfo['rows'].push(['Registered Owner', info['RegisteredOwner']]);
         }
+        */
     } else {
         osinfo['title'] = "Unknown OS";
-        $.each(info, function(k, v) {
-            osinfo['rows'].push([k, v]);
-        });
     }
+    $.each(info, function(k, v) {
+        if(v.length > 0)
+            osinfo['rows'].push([k, v]);
+    });
+
+    osinfo['rows'] = osinfo['rows'].sort(sort_osinfo);
     return JSON.stringify(osinfo);
 }
