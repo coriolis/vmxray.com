@@ -1,6 +1,6 @@
 /*!
  * elFinder - file manager for web
- * Version 2.0 beta (2011-11-03)
+ * Version 2.0 beta (2011-12-26)
  * http://elfinder.org
  * 
  * Copyright 2009-2011, Studio 42
@@ -2778,7 +2778,7 @@ elFinder.prototype._options = {
 	commands : [
 		'open', 'reload', 'home', 'up', 'back', 'forward', 'getfile', 'quicklook', 
 		'download', 'rm', 'duplicate', 'rename', 'mkdir', 'mkfile', 'upload', 'copy', 
-		'cut', 'paste', 'edit', 'extract', 'archive', 'search', 'info', 'view', 'help', 'resize'
+		'cut', 'paste', 'edit', 'extract', 'archive', 'search', 'info', 'osinfo', 'view', 'help', 'resize'
 	],
 	
 	/**
@@ -3754,6 +3754,7 @@ if (elFinder && elFinder.prototype && typeof(elFinder.prototype.i18) == 'object'
 			'cmdupload'    : 'Upload files',
 			'cmdview'      : 'View',
 			'cmdresize'    : 'Resize image',
+            'cmdosinfo'    : 'OS Information',
 			
 			/*********************************** buttons ***********************************/ 
 			'btnClose'  : 'Close',
@@ -3783,6 +3784,7 @@ if (elFinder && elFinder.prototype && typeof(elFinder.prototype.i18) == 'object'
 			'ntfsearch'   : 'Searching files',
 			'ntfresize'   : 'Resizing images',
 			'ntfsmth'     : 'Doing something >_<',
+            'ntfosinfo'   : 'Retrieving OS info',
 			
 			/************************************ dates **********************************/
 			'dateUnknown' : 'unknown',
@@ -5398,6 +5400,24 @@ $.fn.elfindernavbar = function(fm, opts) {
 	});
 	
 	return this;
+}
+
+
+/*
+ * File: /Users/ganesh/tmp/elFinder/js/ui/osinfobutton.js
+ */
+
+/**
+ * @class  elFinder toolbar button to switch current directory view.
+ *
+ **/
+$.fn.elfinderosinfobutton = function(cmd) {
+	return this.each(function() {
+		var button = $(this).elfinderbutton(cmd),
+			icon   = button.children('.elfinder-button-icon');
+        icon.text('OS Info');
+        button.addClass('elfinder-button-osinfo');
+	});
 }
 
 
@@ -7807,6 +7827,82 @@ elFinder.prototype.commands.open = function() {
 		return dfrd.resolve(hashes);
 	}
 
+}
+
+
+/*
+ * File: /Users/ganesh/tmp/elFinder/js/commands/osinfo.js
+ */
+
+/**
+ * @class elFinder command "osinfo". 
+ * Display dialog with file properties.
+ *
+ **/
+elFinder.prototype.commands.osinfo = function() {
+	var m   = 'msg',
+		fm  = this.fm;
+	this.tpl = {
+		main       : '<div class="ui-helper-clearfix elfinder-info-title"><span class="elfinder-cwd-icon {class} ui-corner-all"/>{title}</div><table class="elfinder-info-tb">{content}</table>',
+		itemTitle  : '<strong>{name}</strong>',
+		row        : '<tr><td>{label} : </td><td>{value}</td></tr>',
+	}
+	
+	this.alwaysEnabled = true;
+	this.updateOnSelect = false;
+	
+	this.init = function() {
+	}
+	
+	this.getstate = function() {
+		return 0;
+	}
+	
+	this.options = { ui : 'osinfobutton'};
+	this.exec = function(hashes) {
+		var self    = this,
+			fm      = this.fm,
+			tpl     = this.tpl,
+			row     = tpl.row,
+			content = [],
+			view    = tpl.main,
+			l       = '{label}',
+			v       = '{value}',
+			opts    = {
+				title : this.title,
+				width : 'auto',
+				close : function() { $(this).elfinderdialog('destroy'); }
+			},
+			id = fm.namespace+'-osinfo',
+			dialog = fm.getUI().find('#'+id), 
+			size, title,
+            dfrd = $.Deferred();
+			
+		if (dialog.length) {
+			dialog.elfinderdialog('toTop');
+			return $.Deferred().resolve();
+		}
+		
+        fm.request({
+            data : {cmd: 'get', target: 'osinfo'},
+            notify: {type: 'osinfo', cnt: 1},
+            syncOnFail: false
+        })
+        .done(function(data) {
+            var obj = $.parseJSON(data.content);
+			title = tpl.itemTitle.replace('{name}', obj.title);
+            for (var i = 0; i < obj['rows'].length; i++) {
+                content.push(row.replace(l, obj['rows'][i][0]).replace(v, obj['rows'][i][1]));
+            }
+            view = view.replace('{title}', title).replace('{content}', content.join(''));
+            dialog = fm.dialog(view, opts);
+            dialog.attr('id', id);
+        })
+        .fail(function(error) {
+            dfrd.reject(error);
+        });
+        return dfrd;
+	}
 }
 
 
