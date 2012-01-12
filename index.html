@@ -111,11 +111,12 @@ function test_typed_arrays()
 if (test_typed_arrays()) {
     include_js("cpux86-ta.js");
 } else {
-    include_js("cpux86.js");
+    include_js("cpux86-std.js");
     document.write('<canvas id="dummy_canvas" width="1" height="1"></canvas>');
 }
 -->
 </script>
+<script type="text/javascript" src="http://bellard.org/jslinux/utils.js"></script>
 <script type="text/javascript" src="js/jlfs.js"></script>
 <script type="text/javascript" src="js/app.js"></script>
 <script type="text/javascript">$(document).ready(setupListeners());</script>
