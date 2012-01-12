@@ -675,31 +675,29 @@ function osinfo_convert(slt)
 
     osinfo['rows'] = new Array();
 
+    var winkeys = [['EditionID', 'Edition'], ['CSDVersion', 'Version'],
+        ['CurrentType', 'Type'], ['InstallationType', 'Installation'],
+        ['SystemRoot', 'System Root'],
+
+        ['RegisteredOrganization', 'Registered Organization'],
+        ['RegisteredOwner', 'Registered Owner']];
     if (info['ProductName']) {
         /* Windows */
-        osinfo['title'] = (info['ProductName']) ? info['ProductName'] : "Windows";
-        /*
-        if (info['CSDVersion']) {
-            osinfo['rows'].push(['Version', info['CSDVersion']]);
+        osinfo['title'] = info['ProductName'];
+        for (var i = 0; i < winkeys.length; i++) {
+            if (info[winkeys[i][0]]) {
+                osinfo['rows'].push([winkeys[i][1], info[winkeys[i][0]]]);
+            }
         }
-        if (info['CurrentType']) {
-            osinfo['rows'].push(['Type', info['CurrentType']]);
-        }
-        if (info['RegisteredOrganization']) {
-            osinfo['rows'].push(['Registered Organization', info['RegisteredOrganization']]);
-        }
-        if (info['RegisteredOwner']) {
-            osinfo['rows'].push(['Registered Owner', info['RegisteredOwner']]);
-        }
-        */
     } else {
         osinfo['title'] = "Unknown OS";
     }
+    /*
     $.each(info, function(k, v) {
         if(v.length > 0)
             osinfo['rows'].push([k, v]);
     });
-
     osinfo['rows'] = osinfo['rows'].sort(sort_osinfo);
+    */
     return JSON.stringify(osinfo);
 }
