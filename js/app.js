@@ -298,7 +298,7 @@ function term_handler(str)
 
 function start()
 {
-    var start_addr, initrd_size, params, cmdline_addr;
+    var start_addr, params, init_data;
     
     params = new Object();
 
@@ -312,6 +312,10 @@ function start()
     params.clipboard_set = jshell.output.bind(jshell);
     params.clipboard_get = function() { return "NOTHING" }
 
+    init_data = {};
+    init_data.start_addr = 0x10000;
+    init_data.initrd_size = 0;
+
     pc = new PCEmulator(params);
     
     // JShell
@@ -319,24 +323,41 @@ function start()
     jshell.pc = pc;
     pc.jshell = jshell;
 
-    pc.load_binary("vmlinux26.tif", 0x00100000);
+    pc.load_binary("vmlinux26.tif", 0x00100000, load_rootfs);
 
-    initrd_size = pc.load_binary("rootfs.tif", 0x00400000);
+    function load_rootfs(ret)
+    {
+        if (ret < 0) {
+            Util.Debug('Failed to load Linux kernel');
+            return;
+        }
+        pc.load_binary("rootfs.tif", 0x00400000, load_linuxstart);
+    }
 
-    start_addr = 0x10000;
-    pc.load_binary("linuxstart.tif", start_addr);
+    function load_linuxstart(ret)
+    {
+        if (ret < 0) {
+            Util.Debug('Failed to load root fs');
+            return;
+        }
+        init_data.initrd_size = ret;
+        pc.load_binary("linuxstart.tif", init_data.start_addr, complete_boot);
+    }
 
-    /* set the Linux kernel command line */
-    /* Note: we don't use initramfs because it is not possible to
-       disable gzip decompression in this case, which would be too
-       slow. */
-    cmdline_addr = 0xf800;
-    pc.cpu.write_string(cmdline_addr, "console=ttyS0 root=/dev/ram0 rw init=/sbin/init notsc=1 jsclipboard.jlfs=1");
-
-    pc.cpu.eip = start_addr;
-    pc.cpu.regs[0] = params.mem_size; /* eax */
-    pc.cpu.regs[3] = initrd_size; /* ebx */
-    pc.cpu.regs[1] = cmdline_addr; /* ecx */
-
-    pc.start();
+    function complete_boot(ret) {
+        if (ret < 0) {
+            Util.Debug('Failed to load linuxstart');
+            return;
+        }
+        var cmdline_addr = 0xf800;
+        pc.cpu.write_string(cmdline_addr, "console=ttyS0 root=/dev/ram0 rw init=/sbin/init notsc=1 jsclipboard.jlfs=1");
+    
+        Util.Debug('initrd_size ' + init_data.initrd_size + ' mem_size ' + params.mem_size);
+        pc.cpu.eip = init_data.start_addr;
+        pc.cpu.regs[0] = params.mem_size; /* eax */
+        pc.cpu.regs[3] = init_data.initrd_size; /* ebx */
+        pc.cpu.regs[1] = cmdline_addr; /* ecx */
+    
+        pc.start();
+    }
 }
