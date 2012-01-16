@@ -19,18 +19,19 @@
 <div class="faq">
 <h2> Frequently Asked Questions </h2>
 <object style="height: 390px; width: 640px;"><param name="movie" value="http://www.youtube.com/v/YVLtdpQAAcc?version=3&feature=player_profilepage"><param name="allowFullScreen" value="true"><param name="allowScriptAccess" value="always"><embed src="http://www.youtube.com/v/YVLtdpQAAcc?version=3&feature=player_profilepage" type="application/x-shockwave-flash" allowfullscreen="true" allowScriptAccess="always" width="640" height="360"></object>
-<h4>What can I use VMXRay for?</h4>
+<h4>What can I use <a href="http://vmxray.com">VMXRay</a> for?</h4>
 <ol>
-    <li> Say you have a VMWare disk image (.vmdk file) or a CD image (.iso file) on your desktop and would like to look at the files inside. Perhaps there are a couple of files you would like to extract. You could start the virtual machine to access its files (What was the damn administrator password again?), or install a bunch of utilities to let you mount the image as a filesystem. Or, you could use VMXray, which, being a pure web app, requires no installation at all</li>
+    <li> Say you have a VMWare disk image (VMDK file) or a CD image (ISO file) on your desktop and would like to look at the files inside. Perhaps there are a couple of files you would like to extract. You could start the virtual machine to access its files (What <i>was</i> the administrator password again?), or install a bunch of utilities to let you mount the image as a filesystem. Or, you could use <a href="http://vmxray.com">VMXRay</a>, a pure HTML5 web app which requires no installation at all.</li>
+    <li> The <b>OS Info</b> function in the explorer gives you a summary of useful information extracted from the VM image. For instance, on Windows it reads the registry and displays the service pack number, registered organization and owner, etc.</li>
     <li> You could also look at other filesystem dumps (FAT, ext2, NTFS) in various formats (qcow2, raw). We haven't tested all combinations.</li>
     <li> In theory, you can recover deleted photos from raw dumps of your camera's SD card. It might be a little slow, though.</li>
 </ol>
 
 <h4>What about the privacy of my data?</h4>
-<p> <b>No data from your files is ever sent over the network.</b> The privacy of your data is assured for the simple reason that it never leaves your machine. VMXRay does all its magic completely inside your browser.</p>
+<p> <b>No data from your files is ever sent over the network.</b> The privacy of your data is assured for the simple reason that it never leaves your machine. <a href="http://vmxray.com">VMXRay</a> does all its magic completely inside your browser.</p>
 
 <h4 id="browser-support">What browsers are supported?</h4>
-<p> VMXRay uses bleeding edge HTML5 features like the FileReader API to access local files. Not all browsers support it, and even in those which do, API support is evolving. Currently, we know of the following browsers on which browsing of images and preview of files work:
+<p> <a href="http://vmxray.com">VMXRay</a> uses bleeding edge HTML5 features like the FileReader API to access local files. Not all browsers support it, and even in those which do, API support is evolving. Currently, we know of the following browsers on which browsing of images and preview of files work:
 <ol>
 <li> Google Chrome 13+ (Mac OS X, Ubuntu) </li>
 <li> Firefox 7+ (Mac OS X, Ubuntu)</li>
@@ -41,9 +42,10 @@ Downloading of files works properly only on Chrome.
 <h4>What file formats are supported?</h4>
 <p> There are two formats to be aware of - the disk image format and the filesystem/volume manager. The unhelpful answer is: whatever disk image format is supported by QEMU and whatever filesystem format is supported by sleuthkit. A partial list of formats known to work is given below.
     <ul><li><b>Disk image formats:</b> Raw, VMWare single and multi-file VMDKs, QEMU/KVM QCOW2 (without encryption/compression), Virtualbox VDI, ISO.</li>
-    <li><b>Filesystems:</b> ext2, ext3, FAT, NTFS.</li>
+    <li><b>Filesystems:</b> ext2, ext3, ext4 (experimental), FAT, NTFS.</li>
+    <li><b>Volume managers:</b> Linux LVM (experimental).</li>
     </ul>
-Popular formats which don't work yet include ext4 and Linux filesystems on top of LVM. We hope to support many more in future.
+Non-DOS partitions, FreeBSD filesystems are currently not supported. We hope to support many more formats in future.
 </p>
 <h4> How do I feed it multi-file VMDKs? </h4>
 <p> Select multiple files in the <b>Select Disk Image</b> dialog (Ctrl-click or Cmd-click). If your image is called WinXP, make sure you pick each and every one of the WinXP-s00<i>n</i>.vmdk files <b>and</b> the WinXP.vmdk file.</p>
@@ -51,9 +53,10 @@ Popular formats which don't work yet include ext4 and Linux filesystems on top o
 <p> Drag and drop can be used on all platforms for single files as well.</p>
 <h4 id="slow">Why is it so slow?</h4>
 <p> Actually, it is shockingly fast :) Think about it: an x86 emulator <i>in Javascript</i> booting a modern Linux kernel in under 10 seconds! Moore's law and Fabrice Bellard FTW!</p>
-<p> But yes, moving data in and out of JSLinux is slow in wallclock terms. <a href="https://github.com/coriolis/jlfs">jlfs</a> transfers data at around 420 KB/sec. Previewing and saving files are the slowest operations, since they require a roundtrip: image data goes into JSLinux, file data comes out.</p>
-<p> Speed also depends on the JS engine, browser and platform. Chrome on Mac OS appears to be the fastest. </p>
-<p> Sleuthkit's implementation for some formats performs very slowly in a resource-starved environment like ours, though it does perfectly well in a standard x86 environment. This leads to, for instance, ISO images with a large number of files taking very long to be read. We plan to improve this in future.
+<p> But yes, moving data in and out of JSLinux is slow in wallclock terms. <a href="https://github.com/coriolis/jlfs">jlfs</a> transfers data at around 420 KB/sec. Previewing and saving files are the slowest operations, since they require a roundtrip: image data goes into JSLinux, file data comes out. Speed also depends on the JS engine, browser and platform. Chrome on Mac OS appears to be the fastest. </p>
+<p> Sleuthkit's implementation for some formats performs very slowly in a resource-starved environment like ours, though it does perfectly well in a standard x86 environment. Known issues include:
+<ul><li>Directory loading time is proportional to number of entries. Regular directories load fast enough, but those with thousands of files (like /WINDOWS/SYSTEM32) can take tens of seconds.</li>
+<li>ISO images with a large number of files taking very long to be read.</li></ul> We have already made several performance tweaks to Sleuthkit's NTFS specific to our use case, and are working on a few more.</p>
 <h4> It doesn't make progress beyond "Starting Linux web appliance" / It gets stuck indefinitely at "Opening folder"</h4>
 <p> It is <a href="#slow">slow</a>, but if there is no progress for a minute or more, it is likely a bug somewhere, or browser incompatibility. Look at the error console on the browser. Send us a screenshot of the page and the error console, or better still, a fix :) </p>
 <h4>Is it free?</h4>
