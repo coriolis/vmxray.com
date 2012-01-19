@@ -665,6 +665,8 @@ function osinfo_convert(slt)
         info = {},
         osinfo = {},
         output = "";
+
+    Util.Debug('>>OSinfo data ' + slt);
     lines = slt.split('\n');
     for (var i = 0; i < lines.length; i++) {
         var line = lines[i].split('|');
@@ -684,11 +686,22 @@ function osinfo_convert(slt)
     if (info['ProductName']) {
         /* Windows */
         osinfo['title'] = info['ProductName'];
-        for (var i = 0; i < winkeys.length; i++) {
-            if (info[winkeys[i][0]]) {
-                osinfo['rows'].push([winkeys[i][1], info[winkeys[i][0]]]);
+        if(info['ProductName'].search(/windows/i) != -1) {
+            for (var i = 0; i < winkeys.length; i++) {
+                if (info[winkeys[i][0]]) {
+                    osinfo['rows'].push([winkeys[i][1], info[winkeys[i][0]]]);
+                }
+            }
+        } else {
+            /* Linux */
+            for (var key in info) {
+                //skip kernel info
+                if(key.search(/kernel/i) != -1)
+                    continue;
+                osinfo['rows'].push([key, info[key]]);
             }
         }
+        
     } else {
         osinfo['title'] = "Unknown OS";
     }
