@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>VMXRay - Explore VM images in your browser!</title>
+		<link rel="stylesheet" type="text/css" media="screen" href="css/screen.css">
+        <link rel="stylesheet" href="css/jslider/jslider.css" type="text/css">
+        <link rel="stylesheet" href="css/jslider/jslider.blue.css" type="text/css">
+        <link rel="stylesheet" href="css/jslider/jslider.plastic.css" type="text/css">
+        <link rel="stylesheet" href="css/jslider/jslider.round.css" type="text/css">
+
+		<!-- elFinder CSS (REQUIRED) -->
+		<link rel="stylesheet" type="text/css" media="screen" href="css/elfinder.full.css">
+		<!-- Mac OS X Finder style for jQuery UI smoothness theme (OPTIONAL) -->
+		<link rel="stylesheet" type="text/css" media="screen" href="css/theme.css">
+
+	<meta property="og:title" content="VMXRay" />
+	<meta property="og:description" content="Explore VM images right inside your browser!" />
+	<meta name="description" content="Explore VM image files right within your browser. Look inside your .ISO and .VMDK files, preview text and images, extract selected files to your desktop." />
+    <script type="text/javascript" src="js/jquery-1.7.1.js"></script>
+    <!--
+    <script type="text/javascript" src="js/slt.js"> </script>
+    <script type="text/javascript" src="js/filereader_min.js"> </script>
+    -->
+</head>
+<body class="vm">
+<div id="header">
+	<div id="logo">
+	<h2><a href="/">VMXRay</a><sub>(beta)</sub></h2>
+	</div>
+	<div id="header-sidebar"><ul>
+		<li class="active"><a href="#">Home</a></li>
+		<li><a href="faq.html">FAQ</a></li>
+		<li><a href="about.html">About</a></li>
+	</ul></div>
+</div>
+
+<div id="opsbar">
+<div class="fileinputs">
+    <input type="file" id="files_input" name="files[]" multiple class="file" />
+    <div class="fakefile">
+        <input class="button" value="Select Disk Image" />
+    </div>
+</div>
+<div id="social-share">
+	<!-- AddThis Button BEGIN -->
+	<div class="addthis_toolbox addthis_default_style ">
+	<a class="addthis_button_facebook"></a>
+	<a class="addthis_button_tweet" tw:text="Explore VMWare disk images, CD ISO files, using Linux running _inside_ your browser!" tw:via="vmxray"></a>
+	<a class="addthis_button_google_plusone" g:plusone:size="medium"></a>
+    <!--
+	<a class="addthis_counter addthis_pill_style"></a>
+    -->
+    </div>
+	<!-- AddThis Button END -->
+</div>
+<div id="geekbar">
+    <div id="slider-container">
+       <span class="slider-span"><input id="slider" type="slider" value="1" /></span>
+    </div>
+    <p></p>
+</div>
+</div>
+<div id="fb-container">
+<div id="msg" class="info">
+<p>Explore VMWare and other disk image files right within your browser. Look inside your VMDK, VDI, QCOW2, ISO  files, preview text and images, extract selected files to your desktop. See FAQ for a video walkthrough.</p>
+     Select VM disk file and click in this section. 
+</div>
+<div id="linux-container">
+<br /><br />
+</div>
+<div id="elfinder-container"></div>
+</div>
+
+<div id="id_delay_div"> </div>
+
+<div id="fixed-footer">
+<p>Powered by <a href="http://bellard.org">Fabrice Bellard</a>'s <a href="http://bellard.org/jslinux/tech.html">JSLinux</a>  <a href="about.html">others</a>. copy 2012 <a href="http://www.coriolis.co.in">Coriolis Technologies</a></p>
+</div>
+
+<script type="text/javascript">
+jQuery(document).ready( function (e) {
+    //jQuery.getScript("js/myrt.js");
+});
+
+jQuery("#fb-container").click( function(e) {
+        //setup_file();
+        var mw = new Worker('js/slt.js?q=1');
+        mw.onmessage = function (evt) {
+            console.log("Worker Message : " + evt.data);
+            };
+        var f = jQuery("#files_input");
+        mw.postMessage({'fn':'/fakefile', 'fs': f[0].files[0]});
+        //Module['run'](['/fakefile']);
+        //Module['run'](['/home2/rohan/work/tmp/testdisk1.vmdk']);
+        });
+
+</script>
+<!--
+<script type="text/javascript" src="js/myrt.js"> </script>
+-->
+</body>
+</html>
