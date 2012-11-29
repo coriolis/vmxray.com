@@ -86,7 +86,7 @@ jQuery("#fb-container").click( function(e) {
         //setup_file();
         var mw = new Worker('js/slt.js?q=1');
         mw.onmessage = function (evt) {
-            console.log("Worker Message : " + evt.data);
+            console.log("Worker Message : " + evt.data['type'] + " : " + evt.data['text']);
             };
         var f = jQuery("#files_input");
         mw.postMessage({'fn':'/fakefile', 'fs': f[0].files[0]});
