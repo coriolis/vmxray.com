@@ -1,3 +1,18 @@
+var vmxworker = null;
+function initWorker() {
+    if(vmxworker) 
+        vmxworker.terminate();
+    vmxworker = new Worker('js/slt.js');
+    vmxworker.onmessage = function (evt) {
+        if(evt.data['type'] == 1) {
+            jshell.output(evt.data['text']);
+        }
+        else
+            console.log("Worker Message : " + evt.data['type'] + " : " + evt.data['text']);
+   };
+   vmxworker.postMessage({'type': 'init', 'data': JL.files[0]});
+}
+
 function updateFinder() {
     if (!JL.ready) {
         return;
@@ -12,9 +27,12 @@ function updateFinder() {
             transport: {
                 init : function(elfinderInstance) {
                     Util.Debug('>> transport init');
+                    //return jshell.efbridge.cmd(options);
+                    initWorker();
                 },
                 send: function(options) {
-                    return pc.jshell.efbridge.cmd(options);
+                    return window.jshell.efbridge.cmd(options);
+                    //return window.mw.postMessage({'type': 'send', 'data': options});
                 },
                 upload: function(options) {
                     return false;
@@ -208,8 +226,9 @@ function setupListeners() {
     if (!testBrowserVersion()) {
         $('#msg p.status').replaceWith('<p class="status warning">VMXRay uses bleeding edge HTML5 features. Browsers known to work include Google Chrome 14, Firefox 6 and Opera 11. Your browser appears to be older, so your mileage may vary.</p>');
     }
-    term_start();
-    start();
+    //term_start();
+    //start();
+    window.jshell = new WShell();
     JL.readylistener = function() {
         $('#msg p.status').replaceWith('<p class="status">Appliance ready. Let\'s go explore!</p>');
         updateFinder();

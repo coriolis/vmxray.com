@@ -1,9 +1,14 @@
 
 function my_pread(fd, buf, nbytes, off) {
     Module['print']("my_pread " + nbytes + " off " + off);
+        
     var stream = FS.streams[fd];
-    if(stream.path == "/fakefile") {
+    if(stream.path == "/" + fileInstance.name) {
         //read the image file
+        if(off < 0) {
+            off = off >>> 0;
+            Module['print']("offset negative trying " + off + " size:" + fileInstance.size );
+        }
         var result = 0;
         var size = Math.min(fileInstance.size - off, nbytes);
 
@@ -13,7 +18,7 @@ function my_pread(fd, buf, nbytes, off) {
         var arr = new Int8Array(fsreader.readAsArrayBuffer(blob));
 
         for(var i=0; i<size;i++) {
-            HEAP8[((buf)+(i))] = arr[i];
+            HEAPU8[((buf)+(i))] = arr[i];
         }
 
         return size;
@@ -43,15 +48,22 @@ myreader.get = function (idx) {
 
 
 var fileInstance = null;
+var fcontent = new Object();
 
 function setup_file(fs) {
-    fileInstance = fs;
-    if (Module && this._pread) {
-        this._orig_pread = this._pread;
-        this._pread = my_pread;
-        Module._pread = my_pread;
-        var infile = Module['FS_createDataFile']('/', 'fakefile', [0], true, false);
+    //do this once
+    if(fileInstance == null)
+    {
+        if (Module && this._pread) {
+            this._orig_pread = this._pread;
+            this._pread = my_pread;
+            Module._pread = my_pread;
+        }
     }
+    
+    fcontent.length = fs.size;
+    Module['FS_createDataFile']('/', fs.name, fcontent, true, false);
+    fileInstance = fs;
     
 }
 

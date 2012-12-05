@@ -261,7 +261,7 @@ JLHost.prototype.ioport_readl = function (ia) {
     return hf;
 }
 
-function JShell() {
+function WShell() {
 //    this.jlhost = new JLHost(pc, 0x180, pc.pic.set_irq.bind(pc.pic, 5));
     this.efbridge = new EFBridge();
 //    this.pc = pc;
@@ -269,10 +269,14 @@ function JShell() {
 //    this.serial = new Uart(pc, 0x2f8, pc.pic.set_irq.bind(pc.pic, 3), this.output.bind(this));
     this.cmd_inprogress = null;
     this.queue = [];
+    this.obuffer = '';
+    JL.ready = true;
+    JL.readylistener();
 }
 
+var SLT_OUTPUT_END_MARKER = '<><><><><>';
 
-JShell.prototype.cmd = function(str) {
+WShell.prototype.cmd = function(str) {
     Util.Debug('>> cmd ' + str);
     var dfrd = $.Deferred();
     dfrd.abort = function(jsh) {
@@ -282,12 +286,15 @@ JShell.prototype.cmd = function(str) {
          * wait until this command terminates and sends an output()
          */
         if (this === jsh.cmd_inprogress) {
-            jsh.pc.serial.send_chars(String.fromCharCode(3));
+            //jsh.pc.serial.send_chars(String.fromCharCode(3));
+            console.log("Try to send Ctrl-C");
         }
         this.reject('abort');
     }.bind(dfrd, this);
     dfrd.fire = function(jsh, s) {
-        jsh.pc.serial.send_chars(s + '\n');
+        //jsh.pc.serial.send_chars(s + '\n');
+        console.log("Send command : " + s);
+        vmxworker.postMessage({'type': 'send', 'data': s});
     }.bind(dfrd, this, str);
     if (this.cmd_inprogress) {
        this.queue.unshift(dfrd);
@@ -298,7 +305,7 @@ JShell.prototype.cmd = function(str) {
     return dfrd;
 }
 
-JShell.prototype.output = function(str) {
+WShell.prototype.output = function(str) {
     //Util.Debug('>> output' + str);
     if (!JL.ready && str.replace(/\s+$/, '') == JL.readystr) {
         JL.ready = true;
@@ -307,14 +314,28 @@ JShell.prototype.output = function(str) {
     }
     if (this.cmd_inprogress && !this.cmd_inprogress.isRejected()) {
         // Pass results, unless we had aborted the command
-        this.cmd_inprogress.resolve(str);
-    }
-    while (JL.ready && (this.cmd_inprogress = this.queue.pop())) {
-        if (!this.cmd_inprogress.isRejected() && !this.cmd_inprogress.isResolved()) {
-            this.cmd_inprogress.fire();
-            break;
+        //this.cmd_inprogress.resolve(str);
+        if(str.indexOf(SLT_OUTPUT_END_MARKER) >=0) {
+            this.cmd_inprogress.resolve(this.obuffer);
+            this.obuffer = '';
+            while (JL.ready && (this.cmd_inprogress = this.queue.pop())) {
+                if (!this.cmd_inprogress.isRejected() && !this.cmd_inprogress.isResolved()) {
+                    this.cmd_inprogress.fire();
+                    break;
+                }
+
+            }
         }
+        else
+            this.obuffer += str;
+
     }
+    //while (JL.ready && (this.cmd_inprogress = this.queue.pop())) {
+        //if (!this.cmd_inprogress.isRejected() && !this.cmd_inprogress.isResolved()) {
+            //this.cmd_inprogress.fire();
+            //break;
+        //}
+    //}
 }
 
 function EFBridge() {
@@ -322,8 +343,8 @@ function EFBridge() {
 }
 
 EFBridge.CACHE_FILEDATA_MAX = 1024 * 100;
-EFBridge.sleuthkit_opts = {vmdk: '-i QEMU ', vdi: '-i QEMU ', qcow2: '-i QEMU '}
-EFBridge.filter_entries = [/^\$/];
+EFBridge.sleuthkit_opts = {vmdk: '-i QEMU', vdi: '-i QEMU', qcow2: '-i QEMU'}
+EFBridge.filter_entries = [];//[/^\$/];
 
 EFBridge.prototype.cmd = function(options) {
     Util.Debug('>> transport send ' + JSON.stringify(options.data));
@@ -476,14 +497,14 @@ EFBridge.prototype.open = function(target) {
     var image = JL.files[0].name;
     var ext = image.slice(image.lastIndexOf('.') + 1);
     var opt = EFBridge.sleuthkit_opts[ext.toLowerCase()] || '-a';
-    var cmd = 'slt -O /dev/clipboard ' + opt;
+    var cmd = opt;
     
     if (target != 'ROOT') {
         cmd += ' -I ' + target.slice(1);
     }
-    cmd += ' -l /mnt/' + image.replace(/ /g, "\\ ");
+    cmd += ' -v -l ' + image;
     Util.Debug('>>EFB open ' + cmd);
-    var jshd = pc.jshell.cmd(cmd)
+    var jshd = jshell.cmd(cmd)
         .done(this.opendone.bind(this, target, dfrd))
         .fail(function(df) {
             return function(status) {
