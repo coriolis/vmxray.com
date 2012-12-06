@@ -1,14 +1,25 @@
 var vmxworker = null;
 function initWorker() {
     if(vmxworker) 
+    {
         vmxworker.terminate();
+        $("#id_table_output").empty(); 
+    }
+
     vmxworker = new Worker('js/slt.js');
     vmxworker.onmessage = function (evt) {
         if(evt.data['type'] == 1) {
+            //console.log("Worker Message: " + evt.data['type'] + " : " + evt.data['text']);
             jshell.output(evt.data['text']);
         }
         else
-            console.log("Worker Message : " + evt.data['type'] + " : " + evt.data['text']);
+        {
+            $("#id_table_output").append("<tr><td class=\"term\">" + evt.data['text'] + "</td></tr>");
+            var len = $("#id_table_output").find('tr').length - 25;
+            if(len > 0)
+                $("#id_table_output").find('tr:lt('+len+')').remove()
+            //console.log("Worker Message: " + evt.data['type'] + " : " + evt.data['text']);
+        }
    };
    vmxworker.postMessage({'type': 'init', 'data': JL.files});
 }
