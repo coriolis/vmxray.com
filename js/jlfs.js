@@ -343,7 +343,7 @@ function EFBridge() {
 }
 
 EFBridge.CACHE_FILEDATA_MAX = 1024 * 100;
-EFBridge.sleuthkit_opts = {vmdk: '-i QEMU', vdi: '-i QEMU', qcow2: '-i QEMU'}
+EFBridge.sleuthkit_opts = {vmdk: ['-i', 'QEMU'], vdi: ['-i', 'QEMU'], qcow2: ['-i', 'QEMU']}
 EFBridge.filter_entries = [];//[/^\$/];
 
 EFBridge.prototype.cmd = function(options) {
@@ -496,13 +496,14 @@ EFBridge.prototype.open = function(target) {
         
     var image = JL.files[0].name;
     var ext = image.slice(image.lastIndexOf('.') + 1);
-    var opt = EFBridge.sleuthkit_opts[ext.toLowerCase()] || '-a';
-    var cmd = opt;
+    var opt = EFBridge.sleuthkit_opts[ext.toLowerCase()] || ['-a'];
+    var cmd = opt.slice();
     
     if (target != 'ROOT') {
-        cmd += ' -I ' + target.slice(1);
+        cmd.push('-I'); 
+        cmd.push(target.slice(1));
     }
-    cmd += ' -v -l ' + image;
+    cmd.push.apply(cmd, ['-v', '-l', image]);
     Util.Debug('>>EFB open ' + cmd);
     var jshd = jshell.cmd(cmd)
         .done(this.opendone.bind(this, target, dfrd))
@@ -559,14 +560,13 @@ EFBridge.prototype.get = function(target) {
  
     var image = JL.files[0].name,
         ext = image.slice(image.lastIndexOf('.') + 1),
-        opt = EFBridge.sleuthkit_opts[ext.toLowerCase()] || '',
-        gopt = (target == 'osinfo') ? '-t' : '-c -I ' + target.slice(1);
+        opt = EFBridge.sleuthkit_opts[ext.toLowerCase()] || [],
+        gopt = (target == 'osinfo') ? ['-t'] : ['-c', '-I', target.slice(1)];
 
-    var cmd = 'slt ' + gopt + ' -O /dev/clipboard ' + opt; 
-    cmd += ' /mnt/' + image.replace(/ /g, "\\ ");
+    var cmd = gopt.slice().concat(opt, [image]); 
 
     //Util.Debug('>>EFB get ' + cmd);
-    var jshd = pc.jshell.cmd(cmd)
+    var jshd = jshell.cmd(cmd)
     .done(this.getdone.bind(this, target, dfrd))
     .fail(function(df) {
         return function(status) {

@@ -3,18 +3,27 @@ function my_pread(fd, buf, nbytes, off) {
     Module['print']("my_pread " + nbytes + " off " + off);
         
     var stream = FS.streams[fd];
-    if(stream.path == "/" + fileInstance.name) {
+    var flag = false;
+    var finst = null
+    for(var i=0; i<fileInstanceList.length; i++) {
+        if(stream.path == "/" + fileInstanceList[i].name) {
+            flag = true;
+            finst = fileInstanceList[i];
+            break;
+        }
+    }
+    if(flag) {
         //read the image file
         if(off < 0) {
             off = off >>> 0;
             Module['print']("offset negative trying " + off + " size:" + fileInstance.size );
         }
         var result = 0;
-        var size = Math.min(fileInstance.size - off, nbytes);
+        var size = Math.min(finst.size - off, nbytes);
 
         //read through sync api
         var fsreader = new FileReaderSync();
-        var blob = fileInstance.slice(off, off+size+1);
+        var blob = finst.slice(off, off+size+1);
         var arr = new Int8Array(fsreader.readAsArrayBuffer(blob));
 
         for(var i=0; i<size;i++) {
@@ -48,7 +57,7 @@ myreader.get = function (idx) {
 
 
 var fileInstance = null;
-var fcontent = new Object();
+var fileInstanceList = null;
 
 function setup_file(fs) {
     //do this once
@@ -61,9 +70,13 @@ function setup_file(fs) {
         }
     }
     
-    fcontent.length = fs.size;
-    Module['FS_createDataFile']('/', fs.name, fcontent, true, false);
-    fileInstance = fs;
+    for(var i=0; i< fs.length; i++) {
+        var fcontent = new Object();
+        fcontent.length = fs[i].size;
+        Module['FS_createDataFile']('/', fs[i].name, fcontent, true, false);
+    }
+    fileInstance = fs[0];
+    fileInstanceList = fs;
     
 }
 

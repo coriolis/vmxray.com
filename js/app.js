@@ -10,7 +10,7 @@ function initWorker() {
         else
             console.log("Worker Message : " + evt.data['type'] + " : " + evt.data['text']);
    };
-   vmxworker.postMessage({'type': 'init', 'data': JL.files[0]});
+   vmxworker.postMessage({'type': 'init', 'data': JL.files});
 }
 
 function updateFinder() {
