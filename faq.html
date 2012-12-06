@@ -49,24 +49,22 @@ Popular formats which don't work yet include ext4 and Linux filesystems on top o
 <p> Select multiple files in the <b>Select Disk Image</b> dialog (Ctrl-click or Cmd-click). If your image is called WinXP, make sure you pick each and every one of the WinXP-s00<i>n</i>.vmdk files <b>and</b> the WinXP.vmdk file.</p>
 <p> VMWare Fusion on the Mac represents the VM as a <a href="http://www.mactipsandtricks.com/articles/Wiley_HT_appBundles.lasso">bundle</a>, so you cannot use <b>Select Disk Image</b> for this purpose. Instead, use the Finder to locate and select your desired machine and use the Action menu (gear icon) to <b>Show Package Contents</b>. This will take you inside the bundle directory, where you can see the individual files (.vmdk, .vmx, .vmem etc.) which constitute the VM. You can now select all the VMDK components using Cmd-click. Now drag and drop them onto the vmxray.com page in your browser, on the welcome message or on the explorer window.</p>
 <p> Drag and drop can be used on all platforms for single files as well.</p>
-<h4 id="slow">Why is it so slow?</h4>
-<p> Actually, it is shockingly fast :) Think about it: an x86 emulator <i>in Javascript</i> booting a modern Linux kernel in under 10 seconds! Moore's law and Fabrice Bellard FTW!</p>
-<p> But yes, moving data in and out of JSLinux is slow in wallclock terms. <a href="https://github.com/coriolis/jlfs">jlfs</a> transfers data at around 420 KB/sec. Previewing and saving files are the slowest operations, since they require a roundtrip: image data goes into JSLinux, file data comes out.</p>
-<p> Speed also depends on the JS engine, browser and platform. Chrome on Mac OS appears to be the fastest. </p>
-<p> Sleuthkit's implementation for some formats performs very slowly in a resource-starved environment like ours, though it does perfectly well in a standard x86 environment. This leads to, for instance, ISO images with a large number of files taking very long to be read. We plan to improve this in future.
-<h4> It doesn't make progress beyond "Starting Linux web appliance" / It gets stuck indefinitely at "Opening folder"</h4>
-<p> It is <a href="#slow">slow</a>, but if there is no progress for a minute or more, it is likely a bug somewhere, or browser incompatibility. Look at the error console on the browser. Send us a screenshot of the page and the error console, or better still, a fix :) </p>
+<h4>It reports unsuppoted file type or gets stuck indefinitely at "Opening folder"</h4>
+<p>Currently, it only supports image files of size less than 4GB. The libc that comes with <a href="http://emscripten.org">emscripten</a> does not have support for large files.
+<p> Also, if you are trying split disk files, make sure there are no spaces in file names.
+<h4>Above FAQ is not your case and it gets stuck indefinitely at "Opening folder"</h4>
+<p> It might be slow, but if there is no progress for a minute or more, it is likely a bug somewhere, or browser incompatibility. Look at the error console on the browser. Send us a screenshot of the page and the error console, or better still, a fix :) </p>
 <h4>Is it free?</h4>
 <ul><li>All open source software modifications made by <a href="http://www.coriolis.co.in">Coriolis</a> are released under the same license as the original software, and under 2-clause BSD where new components were created.</li>
 <li> <a href="http://bellard.org/jslinux">JSLinux</a> is &copy Fabrice Bellard and is currently not open source; it may not be rehosted, mirrored or used for commercial purposes. We source the emulator scripts directly from http://bellard.org </li>
 </ul>
 <h4>How does it work?</h4>
 <p> Briefly,
-    <img src="images/vmxray-block.png" height="300" style="float: right"></img>
     <ul>
-        <li>A Linux virtual machine runs inside your browser. This is <a href="http://bellard.org">Fabrice Bellard's</a> <a href="http://bellard.org/jslinux/tech.html">JSLinux</a>, an x86 emulator implemented in Javascript. We use a custom kernel and root filesystem.
-        <li> We have developed a special filesystem, <a href="https://github.com/coriolis/jlfs">jlfs</a>, runs on the Linux virtual machine, and its browser-side counterpart (jlfs.js) enable Linux applications to access files via the HTML5 FileReader API. </li>
-        <li> A <a href="https://github.com/coriolis/sleuthkit">fork</a> of <a href="http://www.sleuthkit.org/">Sleuthkit</a>, a filesystem forensics tool is run on the Linux virtual machine to provide directory and file data.</li>
+        <li>A <a href="https://github.com/coriolis/sleuthkit">fork</a> of <a href="http://www.sleuthkit.org/">Sleuthkit</a>, a filesystem forensics tool is enhanced to understand virtual disk images like .vmdk, .vdi, .qcow2 etc. by making it use <a href="http://qemu.org">QEMU</a> library.
+        <li>We compiled both  <a href="https://github.com/coriolis/sleuthkit">Sleuthkit</a> and <a href="https://github.com/coriolis/QEMU">QEMU</a> to JS.
+        <li>The <a href="https://github.com/coriolis/sleuthkit">Sleuthkit</a> tool is run as webworker that extracts file and folders information from the image file.
+        <li>We have implemented LD_PRELOAD like hook for <i>pread</i> system call that reads actual file bits through HTML5 file reader APIs.</li>
         <li> A <a href="https://github.com/coriolis/elFinder">fork</a> of the beautiful <a href="http://elrte.org/elfinder">elFinder</a> is used to present a folder interface to the file system</li>
         <li> There is no server-side processing; everything happens within the browser. </li>
     </ul>

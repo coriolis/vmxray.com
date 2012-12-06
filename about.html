@@ -21,15 +21,16 @@
 
 <a href="http://vmxray.com">VMXRay</a> has been developed by <a href="http://www.coriolis.co.in">Coriolis Technologies</a>, a software company based in Pune, India. <a href="http://vmxray.com">VMXRay</a> consists of many components and industrial quantities of glue.
     <ul>
-        <li>First and foremost, <a href="http://bellard.org">Fabrice Bellard's</a> <a href="http://bellard.org/jslinux/tech.html">JSLinux</a>, an x86 emulator implemented in Javascript. We use a custom Linux kernel and root filesystem. The root filesysem is built using <a href="http://buildroot.uclibc.org">Buildroot</a>.
-        <li> We have developed a special filesystem, <a href="https://github.com/coriolis/jlfs">jlfs</a>, which runs on the Linux virtual machine, and its "hypervisor" browser-side counterpart (jlfs.js). This enables Linux applications to access files via the HTML5 FileReader API. </li>
+        <li>First and foremost, <a href="http://emscripten.org">Emscripten</a> the tool to compile C programs as Javscript.
         <li> A <a href="https://github.com/coriolis/sleuthkit-1">fork</a> of <a href="http://www.sleuthkit.org/">Sleuthkit</a>, a filesystem forensics tool is run on the Linux virtual machine to provide directory and file data.</li> We have enhanced it to be able to use <a href="http://qemu.org">QEMU</a>'s block backend, so it can read many more disk image formats like vmdk, qcow2.
+        <li> We have compiled Sleuthkit and QEMU to JS using emscripten.</li>
+        <li> We have developed a hook for <i>pread</i> system call that reads file through the HTML5 FileReader API. </li>
         <li> A <a href="https://github.com/coriolis/elFinder">fork</a> of the beautiful <a href="http://elrte.org/elfinder">elFinder</a> is used to present a folder interface to the file system.</li>
     </ul>
 <h2>Contact</h2>
 Feel free to contact us at <a href="mailto: vmxray@coriolis.co.in">vmxray@coriolis.co.in</a> and we promise not to get back at you.
 <div id="footer">
-<p>&copy 2011 <a href="http://www.coriolis.co.in">Coriolis Technologies</a></p>
+<p>&copy 2012 <a href="http://www.coriolis.co.in">Coriolis Technologies</a></p>
 </div>
 </body>
 </html>
