@@ -14,14 +14,22 @@ function initWorker() {
         }
         else
         {
-            $("#id_table_output").append("<tr><td class=\"term\">" + evt.data['text'] + "</td></tr>");
-            var len = $("#id_table_output").find('tr').length - 25;
-            if(len > 0)
-                $("#id_table_output").find('tr:lt('+len+')').remove()
+            log_to_term(evt.data['text']);
             //console.log("Worker Message: " + evt.data['type'] + " : " + evt.data['text']);
         }
    };
    vmxworker.postMessage({'type': 'init', 'data': JL.files});
+}
+
+function log_to_term(str) {
+
+    $("#id_table_output").append("<tr><td class=\"term\">" + str + "</td></tr>");
+
+    //remove any extra lines limit to 25
+    var len = $("#id_table_output").find('tr').length - 25;
+    if(len > 0)
+        $("#id_table_output").find('tr:lt('+len+')').remove()
+
 }
 
 function updateFinder() {

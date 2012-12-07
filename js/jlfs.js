@@ -294,6 +294,7 @@ WShell.prototype.cmd = function(str) {
     dfrd.fire = function(jsh, s) {
         //jsh.pc.serial.send_chars(s + '\n');
         console.log("Send command : " + s);
+        log_to_term("Send command : slt " + s.join(' '));
         vmxworker.postMessage({'type': 'send', 'data': s});
     }.bind(dfrd, this, str);
     if (this.cmd_inprogress) {
