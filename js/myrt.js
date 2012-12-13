@@ -1,10 +1,11 @@
 
-function my_pread(fd, buf, nbytes, off) {
-    Module['print']("my_pread " + nbytes + " off " + off);
+function my_pread(fd, buf, nbytes, offl, offh) {
         
+    var off = (((offl)>>>0)+(((offh)>>>0)*4294967296));
     var stream = FS.streams[fd];
     var flag = false;
     var finst = null
+    //Module['print']("my_pread " + nbytes + " off " + off);
     for(var i=0; i<fileInstanceList.length; i++) {
         if(stream.path == "/" + fileInstanceList[i].name) {
             flag = true;
