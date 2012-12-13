@@ -37,13 +37,6 @@ function updateFinder() {
         return;
     }
     if (JL.files && JL.files.length) {
-        //check files size
-        for(var i=0; i<JL.files.length;i++) {
-            if(JL.files[i].size > 4*1024*1024*1024) {
-                    alert("Please select file less than 4GB");
-                    return;
-            }
-        }
         $("#elfinder").remove();
         $("#msg").remove();
         $('<div id="elfinder"></div>').appendTo('#elfinder-container');
