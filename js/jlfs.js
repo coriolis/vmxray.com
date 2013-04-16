@@ -504,7 +504,7 @@ EFBridge.prototype.open = function(target) {
         cmd.push('-I'); 
         cmd.push(target.slice(1));
     }
-    cmd.push.apply(cmd, ['-v', '-l', image]);
+    cmd.push.apply(cmd, ['-l', image]);
     Util.Debug('>>EFB open ' + cmd);
     var jshd = jshell.cmd(cmd)
         .done(this.opendone.bind(this, target, dfrd))
