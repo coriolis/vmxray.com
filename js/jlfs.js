@@ -344,7 +344,7 @@ function EFBridge() {
 }
 
 EFBridge.CACHE_FILEDATA_MAX = 1024 * 100;
-EFBridge.sleuthkit_opts = {vmdk: ['-i', 'QEMU'], vdi: ['-i', 'QEMU'], qcow2: ['-i', 'QEMU']}
+EFBridge.sleuthkit_opts = {vmdk: ['-i', 'QEMU'], vdi: ['-i', 'QEMU'], qcow2: ['-i', 'QEMU'], vhd: ['-i', 'QEMU']}
 EFBridge.filter_entries = [/^\$/];
 
 EFBridge.prototype.cmd = function(options) {
