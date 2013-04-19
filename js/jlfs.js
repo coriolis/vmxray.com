@@ -128,8 +128,8 @@ JLHost.prototype.read_normal = function(file, obj) {
         blob = file.webkitSlice(obj.offset, obj.offset + obj.len);
     } else if (file.mozSlice) {
         blob = file.mozSlice(obj.offset, obj.offset + obj.len);
-    } else if (file.slice) { /* Opera */
-        blob = file.slice(obj.offset, obj.len);
+    } else if (file.slice) { /* Newer webkit */
+        blob = file.slice(obj.offset, obj.offset + obj.len);
     }
     reader.readAsBinaryString(blob);
 }
