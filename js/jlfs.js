@@ -314,9 +314,11 @@ WShell.prototype.output = function(str) {
         return;
     }
     if (this.cmd_inprogress && !this.cmd_inprogress.isRejected()) {
+        var end = 0;
         // Pass results, unless we had aborted the command
         //this.cmd_inprogress.resolve(str);
-        if(str.indexOf(SLT_OUTPUT_END_MARKER) >=0) {
+        if((end = str.indexOf(SLT_OUTPUT_END_MARKER)) >=0) {
+            this.obuffer += str.slice(0, end);
             this.cmd_inprogress.resolve(this.obuffer);
             this.obuffer = '';
             while (JL.ready && (this.cmd_inprogress = this.queue.pop())) {
