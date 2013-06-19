@@ -31,8 +31,27 @@
 <!--<script type="text/javascript" src="js/jquery.slider-min.js"></script>-->
 <script type="text/javascript" src="js/jlfs.js"></script>
 <script type="text/javascript" src="js/app.js"></script>
+<script type="text/javascript">
+var addthis_config = {
+	data_track_clickback: false
+};
+var addthis_share = {
+    url_transforms: {
+        clean: true
+    }
+};
+</script>
+<script type="text/javascript" src="http://s7.addthis.com/js/250/addthis_widget.js#pubid=ra-4e993438142a6125"></script>
 </head>
 <body class="vm">
+<div id="fb-root"></div>
+<script>(function(d, s, id) {
+  var js, fjs = d.getElementsByTagName(s)[0];
+  if (d.getElementById(id)) return;
+  js = d.createElement(s); js.id = id;
+  js.src = "//connect.facebook.net/en_US/all.js#xfbml=1";
+  fjs.parentNode.insertBefore(js, fjs);
+}(document, 'script', 'facebook-jssdk'));</script>
 <div id="header">
 	<div id="logo">
 	<h2><a href="/">VMXRay</a><sub>(emscripten)</sub></h2>
@@ -53,6 +72,7 @@
 </div>
 <div id="social-share">
 	<!-- AddThis Button BEGIN -->
+	<div class="fb-like" data-href="http://vmxray.com" data-send="false" data-layout="button_count" data-width="100" data-show-faces="false" style="float:left"></div>
 	<div class="addthis_toolbox addthis_default_style ">
 	<a class="addthis_button_facebook"></a>
 	<a class="addthis_button_tweet" tw:text="Explore VMWare disk images, CD ISO files right within your browser!" tw:via="vmxray"></a>
@@ -60,17 +80,18 @@
     <!--
 	<a class="addthis_counter addthis_pill_style"></a>
     -->
+    <iframe allowtransparency="true" frameborder="0" scrolling="no" src="//platform.twitter.com/widgets/follow_button.html?screen_name=vmxray&show_count=false" style="width:120px; height:20px;"></iframe>
     </div>
 	<!-- AddThis Button END -->
 </div>
-<!--
 <div id="geekbar">
+<!--
     <div id="slider-container">
        <span class="slider-span"><input id="slider" type="slider" value="1" /></span>
     </div>
     <p></p>
-</div>
 -->
+</div>
 </div>
 
 <div id="fb-container">
