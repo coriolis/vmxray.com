@@ -7804,20 +7804,19 @@ elFinder.prototype.commands.open = function() {
             .done(function(name) {
                 return function(data) {
                     if (window.ArrayBuffer && window.Uint8Array) {
-                        var blob = new BlobBuilder(),
+                        var blob,
                             len = data.content.length,
                             i, arr = new ArrayBuffer(len),
                             arr_bytes = new Uint8Array(arr);
                         for (i = 0; i < len; i++) {
                             arr_bytes[i] = data.content.charCodeAt(i) & 0xff;
                         }
-                        blob.append(arr);
+                        blob = new Blob([arr]);
                     } else {
                         /* Binary files won't work here. Oh well */
-                        var blob = new BlobBuilder();
-                        blob.append(data.content);
+                        var blob = new Blob([data.content]);
                     }
-                    saveAs(blob.getBlob(), name);
+                    saveAs(blob, name);
                 };
             }(file.name))
             .fail(function(error) {
