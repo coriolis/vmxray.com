@@ -4,10 +4,12 @@
 <title>VMXRay - Explore VM images in your browser!</title>
 		<link rel="stylesheet" type="text/css" media="screen" href="css/screen.css">
 		<link rel="stylesheet" type="text/css" media="screen" href="http://ajax.googleapis.com/ajax/libs/jqueryui/1.8.14/themes/smoothness/jquery-ui.css">
+        <!--
         <link rel="stylesheet" href="css/jslider/jslider.css" type="text/css">
         <link rel="stylesheet" href="css/jslider/jslider.blue.css" type="text/css">
         <link rel="stylesheet" href="css/jslider/jslider.plastic.css" type="text/css">
         <link rel="stylesheet" href="css/jslider/jslider.round.css" type="text/css">
+        -->
 
 		<!-- elFinder CSS (REQUIRED) -->
 		<link rel="stylesheet" type="text/css" media="screen" href="css/elfinder.full.css">
@@ -17,11 +19,24 @@
 	<meta property="og:title" content="VMXRay" />
 	<meta property="og:description" content="Explore VM images right inside your browser!" />
 	<meta name="description" content="Explore VM image files right within your browser. Look inside your .ISO and .VMDK files, preview text and images, extract selected files to your desktop." />
+    <script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.min.js"></script>
+    <!--
+    <script type="text/javascript" src="js/slt.js"> </script>
+    <script type="text/javascript" src="js/filereader_min.js"> </script>
+    -->
+<script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jqueryui/1.8.14/jquery-ui.min.js"></script>
+<script type="text/javascript" src="js/BlobBuilder.min.js"></script>
+<script type="text/javascript" src="js/FileSaver.min.js"></script>
+<script type="text/javascript" src="js/elfinder.full.js"></script>
+<script type="text/javascript" src="js/jquery.dependClass.js"></script>
+<!--<script type="text/javascript" src="js/jquery.slider-min.js"></script>-->
+<script type="text/javascript" src="js/jlfs.js"></script>
+<script type="text/javascript" src="js/app.js"></script>
 </head>
 <body class="vm">
 <div id="header">
 	<div id="logo">
-	<h2><a href="/">VMXRay</a><sub>(beta)</sub></h2>
+	<h2><a href="/">VMXRay</a><sub>(emscripten)</sub></h2>
 	</div>
 	<div id="header-sidebar"><ul>
 		<li class="active"><a href="#">Home</a></li>
@@ -34,7 +49,7 @@
 <div class="fileinputs">
     <input type="file" id="files_input" name="files[]" multiple class="file" />
     <div class="fakefile">
-        <input class="button" value="Select Disk Image"></input>
+        <input class="button" value="Select Disk Image" />
     </div>
 </div>
 <div id="social-share">
@@ -46,79 +61,44 @@
     <!--
 	<a class="addthis_counter addthis_pill_style"></a>
     -->
-    <iframe allowtransparency="true" frameborder="0" scrolling="no" src="//platform.twitter.com/widgets/follow_button.html?screen_name=vmxray&show_count=false" style="width:120px; height:20px;"></iframe>
-	</div>
+    </div>
 	<!-- AddThis Button END -->
 </div>
+<!--
 <div id="geekbar">
     <div id="slider-container">
        <span class="slider-span"><input id="slider" type="slider" value="1" /></span>
     </div>
     <p></p>
 </div>
+-->
 </div>
+
 <div id="fb-container">
 <div id="msg" class="info">
-<p>Explore VMWare and other disk image files right within your browser. Look inside your VMDK, VDI, QCOW2, ISO  files, preview text and images, extract selected files to your desktop. See FAQ for a video walkthrough.</p>
-<p class="status">Starting Linux Web Appliance <img src="img/ajax-loader.gif" /></p>
+<p>Explore VMWare and other disk image files right within your browser. Look inside your VMDK, VDI, QCOW2, ISO  files, preview text and images, extract selected files to your desktop.</p>
+<p>VMXRay is a pure client-side app - your data <b>does not</b> leave your computer!</p>
+<p class="status">Drag and drop a disk image file onto this page, or hit "Select Disk Image" to begin... </p>
 </div>
 <div id="linux-container">
+    <table id="id_table_output"> </table>
 <br /><br />
 </div>
 <div id="elfinder-container"></div>
 </div>
 
 <div id="fixed-footer">
-<p>Powered by <a href="http://bellard.org">Fabrice Bellard</a>'s <a href="http://bellard.org/jslinux/tech.html">JSLinux</a> & <a href="about.html">others</a>. &copy 2012 <a href="http://www.coriolis.co.in">Coriolis Technologies</a></p>
+    <p>Powered by <a href="http://emscripten.org">Emscripten</a> <a href="http://sleuthkit.org"> Sleuthkit</a> <a href="about.html"> others</a>. copy 2012 <a href="http://www.coriolis.co.in">Coriolis Technologies</a></p>
 </div>
 
-<script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1.6.2/jquery.min.js"></script>
-<script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jqueryui/1.8.14/jquery-ui.min.js"></script>
-<script type="text/javascript" src="js/BlobBuilder.min.js"></script>
-<script type="text/javascript" src="js/FileSaver.min.js"></script>
-<script type="text/javascript" src="js/elfinder.full.js"></script>
-<script type="text/javascript" src="js/jquery.dependClass.js"></script>
-<script type="text/javascript" src="js/jquery.slider-min.js"></script>
-<script type="text/javascript" src="http://bellard.org/jslinux/term.js"></script>
 <script type="text/javascript">
-var addthis_config = {
-	data_track_clickback: false
-};
-var addthis_share = {
-    url_transforms: {
-        clean: true
-    },
-    templates: {
-        twitter: 'Check out http://vmxray.com from @vmxray - it lets you browse disk images right from your browser!'
-    }
-};
+jQuery(document).ready( function (e) {
+    setupListeners()
+});
+
 </script>
-<script type="text/javascript" src="http://s7.addthis.com/js/250/addthis_widget.js#pubid=ra-4e993438142a6125"></script>
-<script type="text/javascript">
 <!--
-function include_js(filename)
-{
-   document.write('<script type="text/javascript" src="http://bellard.org/jslinux/' + filename + 
-                  '"><' + '/script>');
-}
-function test_typed_arrays()
-{
-    return (window.Uint8Array &&
-            window.Uint16Array &&
-            window.Int32Array &&
-            window.ArrayBuffer);
-}
-if (test_typed_arrays()) {
-    include_js("cpux86-ta.js");
-} else {
-    include_js("cpux86-std.js");
-    document.write('<canvas id="dummy_canvas" width="1" height="1"></canvas>');
-}
+<script type="text/javascript" src="js/myrt.js"> </script>
 -->
-</script>
-<script type="text/javascript" src="http://bellard.org/jslinux/utils.js"></script>
-<script type="text/javascript" src="js/jlfs.js"></script>
-<script type="text/javascript" src="js/app.js"></script>
-<script type="text/javascript">$(document).ready(setupListeners());</script>
 </body>
 </html>

@@ -8,7 +8,7 @@
 <body class="vm">
 <div id="header">
 	<div id="logo">
-	<h2><a href="/">VMXRay</a><sub>(beta)</sub></h2>
+	<h2><a href="/">VMXRay</a><sub>(emscripten)</sub></h2>
 	</div>
 	<div id="header-sidebar"><ul>
 		<li><a href="/">Home</a></li>
@@ -17,16 +17,16 @@
 	</ul></div>
 </div>
 <h2>About</h2>
-<p><a href="http://vmxray.com">VMXRay</a> is an HTML5 web app which lets you explore disk images like VMWare VMDKs and CD/DVD ISOs right within your browser. It uses a tiny Linux virtual machine running <i>inside</i> your browser to interpret the images, and provides a visual folder interface to navigate, preview and extract files from them. See the <a href="faq.html">FAQ</a> for more details.</p>
+<p><a href="http://vmxray.com">VMXRay</a> is an HTML5 web app which lets you explore disk images like VMWare VMDKs and CD/DVD ISOs right within your browser. It uses the popular <a href="http://www.sleuthkit.org">Sleuthkit</a> digital forensics tool compiled to Javascript using <a href="http://emscripten.org">Emscripten</a>  running <i>inside</i> your browser to interpret the images, and provides a visual folder interface to navigate, preview and extract files from them. See the <a href="faq.html">FAQ</a> for more details.</p>
 
-<a href="http://vmxray.com">VMXRay</a> has been developed by <a href="http://www.coriolis.co.in">Coriolis Technologies</a>, a software company based in Pune, India. <a href="http://vmxray.com">VMXRay</a> consists of many components and industrial quantities of glue.
+<a href="http://vmxray.com">VMXRay</a> has been developed by <a href="http://www.coriolis.co.in">Coriolis Technologies</a>, a software company based in Pune, India. <a href="http://vmxray.com">VMXRay</a> consists of many open-source components and industrial quantities of glue.
     <ul>
-        <li>First and foremost, <a href="http://emscripten.org">Emscripten</a> the tool to compile C programs as Javscript.
+        <li>First and foremost, <a href="http://emscripten.org">Emscripten</a>, which compiles C programs to Javscript.
         <li> A <a href="https://github.com/coriolis/sleuthkit-1">fork</a> of <a href="http://www.sleuthkit.org/">Sleuthkit</a>, a filesystem forensics tool is run on the Linux virtual machine to provide directory and file data.</li> We have enhanced it to be able to use <a href="http://qemu.org">QEMU</a>'s block backend, so it can read many more disk image formats like vmdk, qcow2.
-        <li> We have compiled Sleuthkit and QEMU to JS using emscripten.</li>
-        <li> We have developed a hook for <i>pread</i> system call that reads file through the HTML5 FileReader API. </li>
         <li> A <a href="https://github.com/coriolis/elFinder">fork</a> of the beautiful <a href="http://elrte.org/elfinder">elFinder</a> is used to present a folder interface to the file system.</li>
     </ul>
+
+<p>The previous version of <a href="/jslinux/">JSLinux-based VMXRay</a> is still available, though all new development will be focussed on the <tt>emscripten</tt> branch.</p>
 <h2>Contact</h2>
 Feel free to contact us at <a href="mailto: vmxray@coriolis.co.in">vmxray@coriolis.co.in</a> and we promise not to get back at you.
 <div id="footer">
