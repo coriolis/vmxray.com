@@ -306,7 +306,11 @@ WShell.prototype.cmd = function(str) {
     return dfrd;
 }
 
-WShell.prototype.output = function(str) {
+WShell.prototype.output = function(str, is_done) {
+
+    if (typeof(is_done) === 'undefined')
+        is_done = false;
+
     //Util.Debug('>> output' + str);
     if (!JL.ready && str.replace(/\s+$/, '') == JL.readystr) {
         JL.ready = true;
@@ -317,8 +321,8 @@ WShell.prototype.output = function(str) {
         var end = 0;
         // Pass results, unless we had aborted the command
         //this.cmd_inprogress.resolve(str);
-        if((end = str.indexOf(SLT_OUTPUT_END_MARKER)) >=0) {
-            this.obuffer += str.slice(0, end);
+        this.obuffer += str;
+        if(is_done) {
             this.cmd_inprogress.resolve(this.obuffer);
             this.obuffer = '';
             while (JL.ready && (this.cmd_inprogress = this.queue.pop())) {
@@ -329,8 +333,6 @@ WShell.prototype.output = function(str) {
 
             }
         }
-        else
-            this.obuffer += str;
 
     }
     //while (JL.ready && (this.cmd_inprogress = this.queue.pop())) {

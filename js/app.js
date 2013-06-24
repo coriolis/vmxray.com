@@ -9,8 +9,8 @@ function initWorker() {
     vmxworker = new Worker('js/slt.js');
     vmxworker.onmessage = function (evt) {
         if(evt.data['type'] == 1) {
-            //console.log("Worker Message: " + evt.data['type'] + " : " + evt.data['text']);
-            jshell.output(evt.data['text']);
+            //console.log("Worker Message: " + evt.data['type'] + ":" + evt.data['is_last_message'] + " : " + evt.data['text']);
+            jshell.output(evt.data['text'], evt.data['is_last_message']);
         }
         else
         {
