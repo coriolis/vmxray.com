@@ -439,6 +439,14 @@ EFBridge.prototype.opendone = function(target, dfrd, result) {
                 */
                 continue;
             }
+            /* * indicates file is deleted, we need to identify it and 
+             * remove it from inode number string m[4]
+             */
+            if(m[3].slice(0, "* ".length) == "* ") {
+                m[4] = "#" + m[4];
+                m[3] = m[3].replace("* ", "");
+            }
+
             var ext = m[4].slice(m[4].lastIndexOf('.') + 1);
             var mime = this.mime_map[ext.toLowerCase()] || 'text/plain';
             var file = {name: m[4], hash: 'h' + m[3], phash: cwd.hash,
