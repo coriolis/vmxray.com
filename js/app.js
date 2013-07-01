@@ -33,9 +33,6 @@ function log_to_term(str) {
 }
 
 function updateFinder() {
-    if (!JL.ready) {
-        return;
-    }
     if (JL.files && JL.files.length) {
         $("#elfinder").remove();
         $("#msg").remove();
@@ -245,13 +242,7 @@ function setupListeners() {
     if (!testBrowserVersion()) {
         $('#msg p.status').replaceWith('<p class="status warning">VMXRay uses bleeding edge HTML5 features. Browsers known to work include Google Chrome 14, Firefox 6 and Opera 11. Your browser appears to be older, so your mileage may vary.</p>');
     }
-    //term_start();
-    //start();
     window.jshell = new WShell();
-    JL.readylistener = function() {
-        $('#msg p.status').replaceWith('<p class="status">Appliance ready. Let\'s go explore!</p>');
-        updateFinder();
-    }
     $('table').detach().prependTo('#linux-container');
     $('#slider').slider({
         from: 0,
@@ -314,88 +305,4 @@ function setupListeners() {
     document.getElementById('elfinder-container').addEventListener('dragover', handleDragOver, false);
     document.getElementById('msg').addEventListener('drop', handleFileSelect, false);
     document.getElementById('msg').addEventListener('dragover', handleDragOver, false);
-}
-
-/*
- * Derived from Fabrice Bellard's jslinux.js
- */
-
-var term, pc;
-
-function term_start()
-{
-    term = new Term(100, 30, term_handler);
-    term.open();
-}
-
-/* send chars to the serial port */
-function term_handler(str)
-{
-    pc.serial.send_chars(str);
-}
-
-function start()
-{
-    var start_addr, params, init_data;
-    
-    params = new Object();
-
-    /* serial output chars */
-    params.serial_write = term.write.bind(term);
-
-    /* memory size (in bytes) */
-    params.mem_size = 16 * 1024 * 1024;
-
-    var jshell = new JShell();
-    params.clipboard_set = jshell.output.bind(jshell);
-    params.clipboard_get = function() { return "NOTHING" }
-
-    init_data = {};
-    init_data.start_addr = 0x10000;
-    init_data.initrd_size = 0;
-
-    pc = new PCEmulator(params);
-    
-    // JShell
-    jshell.jlhost = new JLHost(pc, 0x180, pc.pic.set_irq.bind(pc.pic, 5));
-    jshell.pc = pc;
-    pc.jshell = jshell;
-
-    pc.load_binary("vmlinux26.tif", 0x00100000, load_rootfs);
-
-    function load_rootfs(ret)
-    {
-        if (ret < 0) {
-            Util.Debug('Failed to load Linux kernel');
-            return;
-        }
-        pc.load_binary("rootfs.tif", 0x00400000, load_linuxstart);
-    }
-
-    function load_linuxstart(ret)
-    {
-        if (ret < 0) {
-            Util.Debug('Failed to load root fs');
-            return;
-        }
-        init_data.initrd_size = ret;
-        pc.load_binary("linuxstart.tif", init_data.start_addr, complete_boot);
-    }
-
-    function complete_boot(ret) {
-        if (ret < 0) {
-            Util.Debug('Failed to load linuxstart');
-            return;
-        }
-        var cmdline_addr = 0xf800;
-        pc.cpu.write_string(cmdline_addr, "console=ttyS0 root=/dev/ram0 rw init=/sbin/init notsc=1 jsclipboard.jlfs=1");
-    
-        Util.Debug('initrd_size ' + init_data.initrd_size + ' mem_size ' + params.mem_size);
-        pc.cpu.eip = init_data.start_addr;
-        pc.cpu.regs[0] = params.mem_size; /* eax */
-        pc.cpu.regs[3] = init_data.initrd_size; /* ebx */
-        pc.cpu.regs[1] = cmdline_addr; /* ecx */
-    
-        pc.start();
-    }
 }

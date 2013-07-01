@@ -34,247 +34,14 @@ include('js/util.js');
 
 /* Constants - need to keep in sync with jlfs driver */
 function JL() {}
-JL.JLFS_CMD_IRQACK = 0x1;
-JL.JLFS_CMD_TEST = 0x2;
-JL.JLFS_CMD_READ = 0x3;
-JL.JLFS_CMD_WRITE = 0x4;
-JL.JLFS_CMD_READDIR = 0x5;
-JL.JLFS_CMD_STAT = 0x6;
-JL.JLFS_STATUS_OK = 0xa0a0;
-JL.JLFS_STATUS_UNKNOWN_CMD = 0xa0a1;
-JL.JLFS_STATUS_NOK = 0xa0a2;
-JL.JLFS_STATUS_ENOENT = 0x2;
-JL.JLFS_STATUS_EIO = 0x5;
-JL.PAGE_SIZE = 4096;
 JL.files = [];
-JL.ready = false;
-JL.readystr = "f1c0ffee: initialized";
-JL.readylistener = function() {};
-
-/*
- * "Hypervisor"-side device counterpart of the jlfs driver in the kernel.
- *
- * jlfs tells us the location of two pages to be used for passing arguments
- * and results. Only 3 ops are implemented: readdir, stat and read, which are
- * enough for a one-level readonly filesystem. Arguments and results are in a
- * pidgin JSON which can be parsed by sscanf. Yeah, mipela roscol.
- */
-
-function JLHost(pc, port, set_irq_func) {
-    this.statusreg = 0;
-    this.requestbuf = 0; // Physical address of parameter page, written by jlfs
-    this.resultbuf = 0; // Physical address of result page, written by us
-    this.requeststr = "";
-    this.readaddr = 0;
-    this.readlen = 0;
-    
-    this.set_irq_func = set_irq_func;
-    this.pc = pc;
-    pc.register_ioport_write(port, 16, 4, this.ioport_writel.bind(this));
-    pc.register_ioport_read(port, 16, 4, this.ioport_readl.bind(this));
-}
-
-// Read string from physical memory
-JLHost.prototype.read_string = function(addr) {
-    var resultstr = new String;
-    var c = 0;
-    for (var i = 0; i < JL.PAGE_SIZE; i++) {
-        c = this.pc.cpu.ld8_phys(addr + i);
-        if (c == 0) {
-            break;
-        }
-        resultstr += String.fromCharCode(c);
-    }
-    return resultstr;
-}
-
-JLHost.prototype.read_normal = function(file, obj) {
-    var reader = new FileReader();
-    reader.jlHost = this;
-
-    // If we use onloadend, we need to check the readyState.
-    reader.onload = function(evt) {
-        var res = evt.target.result;
-        if (evt.target.readyState == FileReader.DONE) { // DONE == 2
-            for (var i = 0; i < res.length; i++) {
-                this.jlHost.pc.cpu.st8_phys(this.jlHost.readaddr + i, res.charCodeAt(i)&0xff);
-            }
-            res = '{"read":' + evt.target.result.length + '}';
-            this.jlHost.pc.cpu.write_string(this.jlHost.resultbuf, res);
-            this.jlHost.statusreg = JL.JLFS_STATUS_OK;
-            this.jlHost.set_irq_func(1);
-        }
-    };
-
-    reader.onerror = function(evt) {
-        Util.Info(">> CMD_READ onerror " + evt.target.error.code);
-        switch(evt.target.error.code) {
-          case evt.target.error.NOT_FOUND_ERR:
-            this.jlHost.statusreg = JL.JLFS_STATUS_ENOENT;
-            break;
-          case evt.target.error.NOT_READABLE_ERR:
-            this.jlHost.statusreg = JL.JLFS_STATUS_EIO;
-          case evt.target.error.ABORT_ERR:
-            this.jlHost.statusreg = JL.JLFS_STATUS_EIO;
-            break; // noop
-          default:
-            this.jlHost.statusreg = JL.JLFS_STATUS_EIO;
-        };
-        this.jlHost.set_irq_func(1);
-    }
-
-    var blob;
-    if (file.webkitSlice) {
-        blob = file.webkitSlice(obj.offset, obj.offset + obj.len);
-    } else if (file.mozSlice) {
-        blob = file.mozSlice(obj.offset, obj.offset + obj.len);
-    } else if (file.slice) { /* Newer webkit */
-        blob = file.slice(obj.offset, obj.offset + obj.len);
-    }
-    reader.readAsBinaryString(blob);
-}
-
-JLHost.prototype.cmd = function (cmdid) {
-    //Util.Info(">> JLHost cmd " + cmdid);
-    switch (cmdid) {
-        case JL.JLFS_CMD_IRQACK:
-           this.statusreg = 0;
-           this.set_irq_func(0); 
-           break;
-
-        case JL.JLFS_CMD_TEST:
-            Util.Info(">> CMD_TEST");
-            this.pc.cpu.write_string(this.resultbuf, "JLHost: Test Command Successful");
-            this.statusreg = JL.JLFS_STATUS_OK;
-            this.set_irq_func(1);
-            break;
-
-        case JL.JLFS_CMD_READDIR:
-            var args = this.read_string(this.requestbuf);
-            Util.Info(">> CMD_READDIR " + args);
-            var obj = $.parseJSON(args);
-            if (obj.pos + 1 > JL.files.length) {
-                this.statusreg = JL.JLFS_STATUS_ENOENT;
-            } else {
-                var inum = obj.pos + 1;
-                var res = '{ "inode":' + inum + ',"name":"' + JL.files[obj.pos].name.replace(/ /g, "/") + '"}';
-                this.pc.cpu.write_string(this.resultbuf, res);
-                this.statusreg = JL.JLFS_STATUS_OK;
-            }
-            Util.Info(">> CMD_READDIR " + res);
-            this.set_irq_func(1);
-            break;
-
-        case JL.JLFS_CMD_STAT:
-            var args = this.read_string(this.requestbuf);
-            //Util.Info(">> CMD_STAT " + args);
-            var obj = $.parseJSON(args);
-            var res = "";
-            var fname = obj.file.replace(/\//g, "");
-            //Util.Info(">> CMD_STAT file " + fname);
-            for (var i = 0, f; f = JL.files[i]; i++) {
-               // Util.Info(">> CMD_STAT files " + i + " " + f.name);
-                if (f.name == fname) {
-                    var mtime = f.lastModifiedDate;
-                    res += '{"inode":' + (i+1) + ',"size":' + f.size + ',"mtime_sec":' + Math.floor(mtime ? mtime.getTime() / 1000.0 : 0) + ',"mtime_nsec":' + Math.floor(((mtime ? mtime.getTime() % 1000.0 : 0)) * 1000.0) + '}';
-                    this.pc.cpu.write_string(this.resultbuf, res);
-                    this.statusreg = JL.JLFS_STATUS_OK;
-                    this.set_irq_func(1);
-                    return;
-                }
-            }
-            this.statusreg = JL.JLFS_STATUS_ENOENT;
-            this.set_irq_func(1);
-            break;
-
-        case JL.JLFS_CMD_READ:
-            var args = this.read_string(this.requestbuf);
-            //Util.Info(">> CMD_READ " + args);
-            var obj = $.parseJSON(args);
-            var res = "";
-            var fname = obj.file.replace(/\//g, "");
-            var file = JL.files[obj.fd - 1];
-            //Util.Info(">> CMD_READ file " + fname);
-            if (obj.fd > JL.files.length) {
-                this.statusreg = JL.JLFS_STATUS_ENOENT;
-                this.set_irq_func(1);
-                return;
-            }
-            if (fname != file.name) {
-                //Util.Info(">> CMD_READ file mismatch " + fname + " " + file.name);
-                this.statusreg = JL.JLFS_STATUS_EIO;
-                this.set_irq_func(1);
-                return;
-            }
-            this.readaddr = obj.addr;
-            this.readlen = obj.len;
-            this.read_normal(file, obj);
-
-            break;
-
-        default:
-           this.statusreg = JL.JLFS_UNKNOWN_CMD;
-           this.set_irq_func(1); 
-           break;
-    }
-}       
-
-JLHost.prototype.ioport_writel = function (ia, ja) {
-
-    //Util.Info(">> JLHost write " + ja);
-    ia &= 15; // Compute offset by removing base addr of the port.
-    switch (ia) {
-    default:
-    case 0:
-        //Util.Debug(">> port write BASE:" + ja);
-        break;
-    case 4:
-        //Util.Debug(">> port write CMD: " + ja);
-        this.cmd(ja);
-        break;
-    case 8:
-        //Util.Debug(">> port write REQUESTBUF:" + ja);
-        this.requestbuf = ja;
-        break;
-    case 12:
-        //Util.Debug(">> port write RESULTBUF:" + ja);
-        this.resultbuf = ja;
-        break;
-    }
-}
-
-JLHost.prototype.ioport_readl = function (ia) {
-    var hf;
-    //Util.Info(">> JLHost read:" + ia);
-    ia &= 15; // Compute offset by removing base addr of the port.
-    switch (ia) {
-    default:
-    case 0:
-        //Util.Debug(">> port read JLFS_IO_BASE");
-        hf = 0xf1c0ffee;
-        break;
-    case 4:
-        //Util.Debug(">> port read JLFS_IO_READ_STATUS");
-        hf = this.statusreg;
-        break;
-    }
-    return hf;
-}
 
 function WShell() {
-//    this.jlhost = new JLHost(pc, 0x180, pc.pic.set_irq.bind(pc.pic, 5));
     this.efbridge = new EFBridge();
-//    this.pc = pc;
-//    pc.jshell = this;
-//    this.serial = new Uart(pc, 0x2f8, pc.pic.set_irq.bind(pc.pic, 3), this.output.bind(this));
     this.cmd_inprogress = null;
     this.queue = [];
     this.obuffer = '';
-    JL.ready = true;
-    JL.readylistener();
 }
-
-var SLT_OUTPUT_END_MARKER = '<><><><><>';
 
 WShell.prototype.cmd = function(str) {
     Util.Debug('>> cmd ' + str);
@@ -311,12 +78,6 @@ WShell.prototype.output = function(str, is_done) {
     if (typeof(is_done) === 'undefined')
         is_done = false;
 
-    //Util.Debug('>> output' + str);
-    if (!JL.ready && str.replace(/\s+$/, '') == JL.readystr) {
-        JL.ready = true;
-        JL.readylistener();
-        return;
-    }
     if (this.cmd_inprogress && !this.cmd_inprogress.isRejected()) {
         var end = 0;
         // Pass results, unless we had aborted the command
@@ -325,7 +86,7 @@ WShell.prototype.output = function(str, is_done) {
         if(is_done) {
             this.cmd_inprogress.resolve(this.obuffer);
             this.obuffer = '';
-            while (JL.ready && (this.cmd_inprogress = this.queue.pop())) {
+            while ((this.cmd_inprogress = this.queue.pop())) {
                 if (!this.cmd_inprogress.isRejected() && !this.cmd_inprogress.isResolved()) {
                     this.cmd_inprogress.fire();
                     break;
@@ -335,12 +96,6 @@ WShell.prototype.output = function(str, is_done) {
         }
 
     }
-    //while (JL.ready && (this.cmd_inprogress = this.queue.pop())) {
-        //if (!this.cmd_inprogress.isRejected() && !this.cmd_inprogress.isResolved()) {
-            //this.cmd_inprogress.fire();
-            //break;
-        //}
-    //}
 }
 
 function EFBridge() {
