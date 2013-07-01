@@ -404,6 +404,8 @@ EFBridge.prototype.opendone = function(target, dfrd, result) {
     if (target == 'ROOT') {
         cwd = {name: JL.files[0].name, hash: "ROOT", phash: "", date: "30 Jan 2010 14:25", mime: "directory", size: 0, read: 1, write: 1, locked: 0, volumeid: JL.files[0].name};
         this.cache[cwd.hash] = $.extend(true, {}, cwd);
+        this.cache['Partitions'] = Array();
+        this.cache['SelectedPartition'] = -1;
     } else {
         cwd = $.extend(true, {}, this.cache[target]);
         //cwd = {name: comp[2], hash: target, phash: comp.slice(3).join('/'),
@@ -411,6 +413,7 @@ EFBridge.prototype.opendone = function(target, dfrd, result) {
     }
     var files = new Array();
     var subdir_exists = false;
+    var first_part = null;
     for (var i = 0; i < lines.length; i++) {
         var m = /(.)\/(\w)\s+([^:]+):\t(.*?)\t(.*?)\t(.*?)\t(.*?)\t(.*?)\t(\d+)\t(\d+)\t(\d+)/.exec(lines[i]);
         if (m) {
@@ -425,7 +428,7 @@ EFBridge.prototype.opendone = function(target, dfrd, result) {
                 continue;
             }
             if (m[4] == ".") {
-                if (target == 'ROOT') {
+                if (target == 'ROOT' && this.cache['Partitions'].length <= 1) {
                     cwd.hash = 'h' + m[3];
                     this.cache[cwd.hash] = $.extend(true, {}, cwd);
                 }
@@ -449,7 +452,8 @@ EFBridge.prototype.opendone = function(target, dfrd, result) {
 
             var ext = m[4].slice(m[4].lastIndexOf('.') + 1);
             var mime = this.mime_map[ext.toLowerCase()] || 'text/plain';
-            var file = {name: m[4], hash: 'h' + m[3], phash: cwd.hash,
+            var file = {name: m[4], hash: 'h' + m[3],
+                phash: (first_part && this.cache['Partitions'].length > 1)  ? first_part.hash : cwd.hash,
                 date: m[5], mime: (m[2] == 'd') ? 'directory' : mime,
                 size: m[9], read: 1, write: 1, locked: 0};
             files.push(file);
@@ -458,6 +462,31 @@ EFBridge.prototype.opendone = function(target, dfrd, result) {
                 subdir_exists = true;
             }
         }
+        else {
+            var partline = lines[i].split(":");
+            var partdesc, idx = 0;
+            if(partline[0] == "partition") {
+                this.cache['Partitions'].push({'offset': partline[1], 
+                                            'length': partline[2]});
+                if(partline[3] && (idx = partline[3].indexOf("(")) > 0)
+                    partdesc = partline[3].slice(0, idx -1);
+                else
+                    partdesc = partline[3];
+
+                var file = {
+                    name: 'Partition' + this.cache['Partitions'].length + ' ' + parseSize(parseInt(partline[2]))+ ' ' + partdesc, 
+                    hash: 'p' + partline[1],
+                    description: partline[2],
+                    mime: 'directory', phash: cwd.hash, 
+                    size: partline[2], read: 1, write: 1, locked: 0};
+
+                files.push(file);
+                this.cache[file.hash] = file;
+                if(! first_part)
+                    first_part = file;
+            }
+        }
+                
     }
     if (subdir_exists) {
         cwd.dirs = 1;
@@ -512,7 +541,10 @@ EFBridge.prototype.open = function(target) {
     var opt = EFBridge.sleuthkit_opts[ext.toLowerCase()] || ['-a'];
     var cmd = opt.slice();
     
-    if (target != 'ROOT') {
+    if(target.slice(0, 1) == 'p') {
+        cmd.push('-P');
+        cmd.push(target.slice(1));
+    }else if (target != 'ROOT') {
         cmd.push('-I'); 
         cmd.push(target.slice(1));
     }
@@ -747,4 +779,16 @@ function osinfo_convert(slt)
     osinfo['rows'] = osinfo['rows'].sort(sort_osinfo);
     */
     return JSON.stringify(osinfo);
+}
+
+function parseSize(size) {
+	var suffix = ["bytes", "KB", "MB", "GB", "TB", "PB"],
+		tier = 0;
+
+	while(size >= 1024) {
+		size = size / 1024;
+		tier++;
+	}
+
+	return Math.round(size * 10) / 10 + " " + suffix[tier];
 }
