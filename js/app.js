@@ -18,7 +18,7 @@ function initWorker() {
             //console.log("Worker Message: " + evt.data['type'] + " : " + evt.data['text']);
         }
    };
-   vmxworker.postMessage({'type': 'init', 'data': JL.files});
+   vmxworker.postMessage({'type': 'init', 'data': jshell.files});
 }
 
 function log_to_term(str) {
@@ -33,7 +33,7 @@ function log_to_term(str) {
 }
 
 function updateFinder() {
-    if (JL.files && JL.files.length) {
+    if (jshell.files && jshell.files.length) {
         $("#elfinder").remove();
         $("#msg").remove();
         $('<div id="elfinder"></div>').appendTo('#elfinder-container');
@@ -263,16 +263,16 @@ function setupListeners() {
     function setFiles(files) {
         var base_vmdk = -1;
         for (var i = 0, f; f = files[i]; i++) {
-            JL.files[i] = f;
+            jshell.files[i] = f;
             if (f.name.match(/\.vmdk/i) && !f.name.match(/\-s\d{3}\.vmdk/i)) {
                 base_vmdk = i;
             }
         }
-        if (JL.files.length > 1 && base_vmdk != -1) {
+        if (jshell.files.length > 1 && base_vmdk != -1) {
             /* only supported case now is multi-file vmdk */
-            var tmp = JL.files[0];
-            JL.files[0] = JL.files[base_vmdk];
-            JL.files[base_vmdk] = tmp;
+            var tmp = jshell.files[0];
+            jshell.files[0] = jshell.files[base_vmdk];
+            jshell.files[base_vmdk] = tmp;
         }
     }
 
@@ -280,7 +280,7 @@ function setupListeners() {
         evt.stopPropagation();
         evt.preventDefault();
         setFiles(evt.target.files);
-        $('<p>Exploring ' + JL.files[0].name + '..</p>').appendTo($('#msg'));
+        $('<p>Exploring ' + jshell.files[0].name + '..</p>').appendTo($('#msg'));
         updateFinder();
     }
 
@@ -288,7 +288,7 @@ function setupListeners() {
         evt.stopPropagation();
         evt.preventDefault();
         setFiles(evt.dataTransfer.files);
-        $('<p>Exploring ' + JL.files[0].name + '..</p>').appendTo($('#msg'));
+        $('<p>Exploring ' + jshell.files[0].name + '..</p>').appendTo($('#msg'));
         updateFinder();
     }
 

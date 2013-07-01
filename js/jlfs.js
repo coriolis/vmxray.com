@@ -32,12 +32,9 @@ var include = function (filename) {
 include('js/util.js');
 
 
-/* Constants - need to keep in sync with jlfs driver */
-function JL() {}
-JL.files = [];
-
 function WShell() {
     this.efbridge = new EFBridge();
+    this.files = [];
     this.cmd_inprogress = null;
     this.queue = [];
     this.obuffer = '';
@@ -157,7 +154,7 @@ EFBridge.prototype.opendone = function(target, dfrd, result) {
     var lines = result.split(/\n/);
     var cwd;
     if (target == 'ROOT') {
-        cwd = {name: JL.files[0].name, hash: "ROOT", phash: "", date: "30 Jan 2010 14:25", mime: "directory", size: 0, read: 1, write: 1, locked: 0, volumeid: JL.files[0].name};
+        cwd = {name: jshell.files[0].name, hash: "ROOT", phash: "", date: "30 Jan 2010 14:25", mime: "directory", size: 0, read: 1, write: 1, locked: 0, volumeid: jshell.files[0].name};
         this.cache[cwd.hash] = $.extend(true, {}, cwd);
         this.cache['Partitions'] = Array();
         this.cache['SelectedPartition'] = -1;
@@ -291,7 +288,7 @@ EFBridge.prototype.open = function(target) {
         return dfrd;
     }
         
-    var image = JL.files[0].name;
+    var image = jshell.files[0].name;
     var ext = image.slice(image.lastIndexOf('.') + 1);
     var opt = EFBridge.sleuthkit_opts[ext.toLowerCase()] || ['-a'];
     var cmd = opt.slice();
@@ -337,7 +334,7 @@ EFBridge.prototype.get = function(target) {
     var dfrd = $.Deferred();
  
     if (target == 'osinfo' && !this.cache[target]) {
-        var h = {name: "osinfo", hash: "osinfo", phash: "", date: "30 Jan 2010 14:25", mime: "text/html", size: 1024, read: 1, write: 1, locked: 0, volumeid: JL.files[0].name};
+        var h = {name: "osinfo", hash: "osinfo", phash: "", date: "30 Jan 2010 14:25", mime: "text/html", size: 1024, read: 1, write: 1, locked: 0, volumeid: jshell.files[0].name};
         this.cache[target] = $.extend(true, {}, h);
     }
 
@@ -358,7 +355,7 @@ EFBridge.prototype.get = function(target) {
         return dfrd;
     }
  
-    var image = JL.files[0].name,
+    var image = jshell.files[0].name,
         ext = image.slice(image.lastIndexOf('.') + 1),
         opt = EFBridge.sleuthkit_opts[ext.toLowerCase()] || [],
         gopt = (target == 'osinfo') ? ['-t'] : ['-c', '-I', target.slice(1)];
