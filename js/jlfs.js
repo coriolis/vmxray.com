@@ -244,6 +244,13 @@ EFBridge.prototype.opendone = function(target, dfrd, result) {
         cwd.dirs = 1;
     }
 
+    if(this.cache['Partitions'].length == 1) {
+        var idx = files.indexOf(first_part);
+        if(idx >= 0)
+            files.splice(idx, 1);
+        console.log("Removed part at " + idx);
+    }
+
     files.unshift($.extend(true, {}, cwd));
     this.cache[cwd.hash].cwd = $.extend(true, {}, cwd);
     this.cache[cwd.hash].files = $.extend(true, [], files);
