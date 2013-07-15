@@ -97,6 +97,7 @@ WShell.prototype.output = function(str, is_done) {
 
 function EFBridge() {
     this.cache = {}; // cache of file stat data
+    this.ShowDeleted = false;
 }
 
 EFBridge.CACHE_FILEDATA_MAX = 1024 * 100;
@@ -197,10 +198,11 @@ EFBridge.prototype.opendone = function(target, dfrd, result) {
             /* * indicates file is deleted, we need to identify it and 
              * remove it from inode number string m[4]
              */
-            if(m[3].slice(0, "* ".length) == "* ") {
+            if((m[3].slice(0, "* ".length) == "* ") && this.ShowDeleted) {
                 m[4] = "#" + m[4];
                 m[3] = m[3].replace("* ", "");
             }
+            
 
             var ext = m[4].slice(m[4].lastIndexOf('.') + 1);
             var mime = this.mime_map[ext.toLowerCase()] || 'text/plain';
@@ -226,7 +228,7 @@ EFBridge.prototype.opendone = function(target, dfrd, result) {
                     partdesc = partline[3];
 
                 var file = {
-                    name: 'Partition' + this.cache['Partitions'].length + ' ' + parseSize(parseInt(partline[2]))+ ' ' + partdesc, 
+                    name: 'Part ' + this.cache['Partitions'].length + ' ' + parseSize(parseInt(partline[2]))+ ' ' + partdesc, 
                     hash: 'p' + partline[1],
                     description: partline[2],
                     mime: 'directory', phash: cwd.hash, 
