@@ -198,9 +198,13 @@ EFBridge.prototype.opendone = function(target, dfrd, result) {
             /* * indicates file is deleted, we need to identify it and 
              * remove it from inode number string m[4]
              */
-            if((m[3].slice(0, "* ".length) == "* ") && this.ShowDeleted) {
-                m[4] = "#" + m[4];
-                m[3] = m[3].replace("* ", "");
+            if(m[3].slice(0, "* ".length) == "* ") {
+                if(this.ShowDeleted) {
+                    m[4] = "#" + m[4];
+                    m[3] = m[3].replace("* ", "");
+                }
+                else
+                    continue;
             }
             
 
