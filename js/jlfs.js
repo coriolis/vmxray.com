@@ -44,19 +44,13 @@ WShell.prototype.cmd = function(str) {
     Util.Debug('>> cmd ' + str);
     var dfrd = $.Deferred();
     dfrd.abort = function(jsh) {
-        /*
-         * Subtle! We send a ^C if we're the command in progress, but DON'T
-         * take it off the inprogress slot. So the following command will
-         * wait until this command terminates and sends an output()
-         */
         if (this === jsh.cmd_inprogress) {
-            //jsh.pc.serial.send_chars(String.fromCharCode(3));
+            // XXX May need to abort worker and spawn a new one
             console.log("Try to send Ctrl-C");
         }
         this.reject('abort');
     }.bind(dfrd, this);
     dfrd.fire = function(jsh, s) {
-        //jsh.pc.serial.send_chars(s + '\n');
         console.log("Send command : " + s);
         log_to_term("Send command : slt " + s.join(' '));
         vmxworker.postMessage({'type': 'send', 'data': s});
@@ -165,8 +159,6 @@ EFBridge.prototype.opendone = function(target, dfrd, result) {
         this.cache['SelectedPartition'] = -1;
     } else {
         cwd = $.extend(true, {}, this.cache[target]);
-        //cwd = {name: comp[2], hash: target, phash: comp.slice(3).join('/'),
-         //       mime: "directory", size: 0, read: 1, write: 1, locked: 0};
     }
     var files = new Array();
     var subdir_exists = false;
@@ -215,9 +207,6 @@ EFBridge.prototype.opendone = function(target, dfrd, result) {
             if (filter) {
                 continue;
             }
-            /* * indicates file is deleted, we need to identify it and 
-             * remove it from inode number string m[4]
-             */
             if (f.deleted) {
                 if (this.ShowDeleted) {
                     f.name = '#' + f.name;
