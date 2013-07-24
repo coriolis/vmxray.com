@@ -152,8 +152,12 @@ EFBridge.prototype.opendone = function(target, dfrd, result) {
         dfrd.reject(dfrd, 'open');
         return;
     }
-    var lines = result.split(/\n/);
-    var cwd;
+    var res, cwd;
+    try {
+        res = $.parseJSON('{' + result + '}');
+    } catch(err) {
+        return dfrd.reject(dfrd, 'Failed to parse JSON output from slt');
+    }
     if (target == 'ROOT') {
         cwd = {name: jshell.files[0].name, hash: "ROOT", phash: "", date: "30 Jan 2010 14:25", mime: "directory", size: 0, read: 1, write: 1, locked: 0, volumeid: jshell.files[0].name};
         this.cache[cwd.hash] = $.extend(true, {}, cwd);
@@ -167,84 +171,73 @@ EFBridge.prototype.opendone = function(target, dfrd, result) {
     var files = new Array();
     var subdir_exists = false;
     var first_part = null;
-    for (var i = 0; i < lines.length; i++) {
-        var m = /(.)\/(\w)\s+([^:]+):\t(.*?)\t(.*?)\t(.*?)\t(.*?)\t(.*?)\t(\d+)\t(\d+)\t(\d+)/.exec(lines[i]);
-        if (m) {
-            var filter = false;
-            for (var j = 0; j < EFBridge.filter_entries.length; j++) {
-                if (m[4].match(EFBridge.filter_entries[j])) {
-                    filter = true;
-                    break;
-                }
-            }
-            if (filter) {
-                continue;
-            }
-            if (m[4] == ".") {
+
+    if (res && res.partitions && this.cache['Partitions'].length == 0) {
+        var parts = res.partitions, partdesc, idx = 0;
+        for (var p = 0; p < parts.length - 1; p++) {
+            this.cache['Partitions'].push({'offset': parts[p].start,
+                'length': parts[p].len});
+                if(parts[p].desc && (idx = parts[p].desc.indexOf("(")) > 0)
+                    partdesc = parts[p].desc.slice(0, idx - 1);
+                else
+                    partdesc = parts[p].desc;
+                var file = {
+                    name: 'Part ' + this.cache['Partitions'].length + ' ' + parseSize(parts[p].len) + ' ' + partdesc, 
+                    hash: 'p' + parts[p].start,
+                    mime: 'directory', phash: cwd.hash, 
+                    size: parts[p].len, read: 1, write: 1, locked: 0};
+
+                files.push(file);
+                this.cache[file.hash] = file;
+                if (!first_part)
+                    first_part = file;
+        }
+    }
+
+    if (res && res.files) {
+        var flist = res.files;
+
+        for (var i = 0; i < flist.length - 1; i++) {
+            var f = flist[i];
+            if (f.name == ".") {
                 if (target == 'ROOT' && this.cache['Partitions'].length <= 1) {
-                    cwd.hash = 'h' + m[3];
+                    cwd.hash = 'h' + f.inum;
                     this.cache[cwd.hash] = $.extend(true, {}, cwd);
                 }
                 continue;
             }
-            if (m[4] == "..") {
-                /*
-                if (target != 'ROOT') {
-                    cwd.phash = m[3];
-                }
-                */
+            if (f.name == "..") {
+                continue;
+            }
+            var filter = EFBridge.filter_entries.reduce(function(prev, curr) {
+                return prev || f.name.match(curr);
+            }, false);
+            if (filter) {
                 continue;
             }
             /* * indicates file is deleted, we need to identify it and 
              * remove it from inode number string m[4]
              */
-            if(m[3].slice(0, "* ".length) == "* ") {
-                if(this.ShowDeleted) {
-                    m[4] = "#" + m[4];
-                    m[3] = m[3].replace("* ", "");
+            if (f.deleted) {
+                if (this.ShowDeleted) {
+                    f.name = '#' + f.name;
                 }
-                else
+                else {
                     continue;
+                }
             }
-            
-
-            var ext = m[4].slice(m[4].lastIndexOf('.') + 1);
+            var ext = f.name.slice(f.name.lastIndexOf('.') + 1);
             var mime = this.mime_map[ext.toLowerCase()] || 'text/plain';
-            var file = {name: m[4], hash: 'h' + m[3],
+            var file = {name: f.name, hash: 'h' + f.inum,
                 phash: (first_part && this.cache['Partitions'].length > 1)  ? first_part.hash : cwd.hash,
-                date: m[5], mime: (m[2] == 'd') ? 'directory' : mime,
-                size: m[9], read: 1, write: 1, locked: 0};
+                date: f.mtime, mime: (f.dtype == 'd') ? 'directory' : mime,
+                size: f.size, read: 1, write: 1, locked: 0};
             files.push(file);
             this.cache[file.hash] = file;
-            if (m[2] == 'd') {
+            if (f.dtype == 'd') {
                 subdir_exists = true;
             }
         }
-        else {
-            var partline = lines[i].split(":");
-            var partdesc, idx = 0;
-            if(partline[0] == "partition") {
-                this.cache['Partitions'].push({'offset': partline[1], 
-                                            'length': partline[2]});
-                if(partline[3] && (idx = partline[3].indexOf("(")) > 0)
-                    partdesc = partline[3].slice(0, idx -1);
-                else
-                    partdesc = partline[3];
-
-                var file = {
-                    name: 'Part ' + this.cache['Partitions'].length + ' ' + parseSize(parseInt(partline[2]))+ ' ' + partdesc, 
-                    hash: 'p' + partline[1],
-                    description: partline[2],
-                    mime: 'directory', phash: cwd.hash, 
-                    size: partline[2], read: 1, write: 1, locked: 0};
-
-                files.push(file);
-                this.cache[file.hash] = file;
-                if(! first_part)
-                    first_part = file;
-            }
-        }
-                
     }
     if (subdir_exists) {
         cwd.dirs = 1;

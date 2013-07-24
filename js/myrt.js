@@ -1,4 +1,3 @@
-
 function my_pread(fd, buf, nbytes, offl, offh) {
         
     var off = (((offl)>>>0)+(((offh)>>>0)*4294967296));
@@ -48,14 +47,6 @@ else if(this._pread) {
     this._pread = my_pread;
 }
 */
-
-
-var myreader = new Object();
-myreader.get = function (idx) {
-}
-
-
-
 
 var fileInstance = null;
 var fileInstanceList = null;

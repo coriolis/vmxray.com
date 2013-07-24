@@ -14,8 +14,8 @@ function initWorker() {
         }
         else
         {
-            log_to_term(evt.data['text']);
-            //console.log("Worker Message: " + evt.data['type'] + " : " + evt.data['text']);
+            //log_to_term(evt.data['text']);
+            console.log("Worker Message: " + evt.data['type'] + " : " + evt.data['text']);
         }
    };
    vmxworker.postMessage({'type': 'init', 'data': jshell.files});
