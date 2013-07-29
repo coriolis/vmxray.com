@@ -3725,7 +3725,7 @@ if (elFinder && elFinder.prototype && typeof(elFinder.prototype.i18) == 'object'
 			'errArcSymlinks'       : 'For security reason denied to unpack archives contains symlinks.',
 			'errArcMaxSize'        : 'Archive files exceeds maximum allowed size.',
 			'errResize'            : 'Unable to resize "$1".',
-			'errUsupportType'      : 'Unsupported file type.',
+			'errUsupportType'      : 'Unsupported partition, filesystem or file type.',
 			
 			/******************************* commands names ********************************/
 			'cmdarchive'   : 'Create archive',
