@@ -15,6 +15,7 @@ function initWorker() {
         else
         {
             //log_to_term(evt.data['text']);
+            if(evt.data['text'].indexOf("qemu_read") < 0)
             console.log("Worker Message: " + evt.data['type'] + " : " + evt.data['text']);
         }
    };
@@ -72,7 +73,7 @@ function updateFinder() {
             },
             contextmenu: {
                 cwd: ['open', 'info'],
-                files: ['open', 'info', 'quicklook'],
+                files: ['open', 'info', 'quicklook', 'download'],
                 group: ['open']
             },
             syncOnFail:false,
