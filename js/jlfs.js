@@ -95,7 +95,7 @@ function EFBridge() {
 }
 
 EFBridge.CACHE_FILEDATA_MAX = 1024 * 100;
-EFBridge.sleuthkit_opts = {vmdk: ['-i', 'QEMU'], vdi: ['-i', 'QEMU'], qcow2: ['-i', 'QEMU'], vhd: ['-i', 'QEMU']}
+EFBridge.sleuthkit_opts = {vmdk: ['-i', 'QEMU'], vdi: ['-i', 'QEMU'], qcow2: ['-i', 'QEMU'], vhd: ['-i', 'QEMU'], img: ['-i', 'QEMU']}
 EFBridge.filter_entries = [/^\$/];
 
 EFBridge.prototype.cmd = function(options) {
@@ -152,17 +152,20 @@ EFBridge.prototype.opendone = function(target, dfrd, result) {
     } catch(err) {
         return dfrd.reject(dfrd, 'Failed to parse JSON output from slt');
     }
+
+    var files = new Array();
+    var subdir_exists = false;
+    var first_part = null;
+
     if (target == 'ROOT') {
         cwd = {name: jshell.files[0].name, hash: "ROOT", phash: "", date: "30 Jan 2010 14:25", mime: "directory", size: 0, read: 1, write: 1, locked: 0, volumeid: jshell.files[0].name};
         this.cache[cwd.hash] = $.extend(true, {}, cwd);
         this.cache['Partitions'] = Array();
         this.cache['SelectedPartition'] = -1;
+        subdir_exists = true;
     } else {
         cwd = $.extend(true, {}, this.cache[target]);
     }
-    var files = new Array();
-    var subdir_exists = false;
-    var first_part = null;
 
     if (res && res.partitions && this.cache['Partitions'].length == 0) {
         var parts = res.partitions, partdesc, idx = 0;
