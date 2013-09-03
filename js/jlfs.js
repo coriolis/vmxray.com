@@ -334,26 +334,33 @@ EFBridge.prototype.get = function(target) {
     }
 
     var ct = this.cache[target];
+    /*
     if (!ct || ct.mime == 'directory') {
         dfrd.status = 403;
         dfrd.reject(dfrd, 'get: invalid target');
         return dfrd;
     }
+    if (!ct.size) {
+        dfrd.resolve({content: ''});
+        return dfrd;
+    }
+    */
+
     if (ct.data) {
      //   Util.Debug('>> efbridge get cache hit: ' + JSON.stringify(ct.data));
         dfrd.resolve({content: ct.data});
         return dfrd;
     }
-        
-    if (!ct.size) {
-        dfrd.resolve({content: ''});
-        return dfrd;
-    }
  
     var image = jshell.files[0].name,
         ext = image.slice(image.lastIndexOf('.') + 1),
-        opt = EFBridge.sleuthkit_opts[ext.toLowerCase()] || [],
-        gopt = (target == 'osinfo') ? ['-t'] : ['-c', '-I', target.slice(1)];
+        opt = EFBridge.sleuthkit_opts[ext.toLowerCase()] || [];
+    
+    //if its directory use -e
+    if (!ct || ct.mime == 'directory') 
+       var gopt = ['-e', this.cache[target].name + ".zip", '-I', target.slice(1)];
+    else
+       var gopt = (target == 'osinfo') ? ['-t'] : ['-c', '-I', target.slice(1)];
 
     var cmd = gopt.slice().concat(opt, [image]); 
 

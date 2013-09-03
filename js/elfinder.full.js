@@ -6812,7 +6812,7 @@ elFinder.prototype.commands.download = function() {
 	var self   = this,
 		fm     = this.fm,
 		filter = function(hashes) {
-			return $.map(self.files(hashes), function(f) { return f.mime == 'directory' ? null : f });
+			return $.map(self.files(hashes), function(f) { return f });
 		};
 	
 	this.shortcuts = [{
@@ -6842,6 +6842,7 @@ elFinder.prototype.commands.download = function() {
 			return dfrd.reject();
 		}
 			
+        /*
 		base += base.indexOf('?') === -1 ? '?' : '&';
 			
 		for (i = 0; i < files.length; i++) {
@@ -6853,6 +6854,36 @@ elFinder.prototype.commands.download = function() {
 					}, 1000)
 				});
 		}
+        */
+		for (i = 0; i < files.length; i++) {
+            file = files[i];
+            fm.request({
+                data : {cmd: 'get', target: file.hash},
+                notify: {type: 'download', cnt: 1},
+                syncOnFail: false
+            })
+            .done(function(name) {
+                return function(data) {
+                    if (window.ArrayBuffer && window.Uint8Array) {
+                        var blob,
+                            len = data.content.length,
+                            i, arr = new ArrayBuffer(len),
+                            arr_bytes = new Uint8Array(arr);
+                        for (i = 0; i < len; i++) {
+                            arr_bytes[i] = data.content.charCodeAt(i) & 0xff;
+                        }
+                        blob = new Blob([arr]);
+                    } else {
+                        /* Binary files won't work here. Oh well */
+                        var blob = new Blob([data.content]);
+                    }
+                    saveAs(blob, name+".zip");
+                };
+            }(file.name))
+            .fail(function(error) {
+                dfrd.reject(error);
+            })
+        }
 		return dfrd.resolve(hashes);
 	}
 
