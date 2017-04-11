@@ -1,9 +1,9 @@
 var vmxworker = null;
 function initWorker() {
-    if(vmxworker) 
+    if(vmxworker)
     {
         vmxworker.terminate();
-        $("#id_table_output").empty(); 
+        $("#id_table_output").empty();
     }
 
     vmxworker = new Worker('js/slt.js');
@@ -260,20 +260,45 @@ function setupListeners() {
         $('#linux-container').css('opacity', val / 11.0);
         $('#elfinder-container').css('opacity', (11.0 - val) / 11.0);
     }
-        
-    function setFiles(files) {
+
+    function setFiles(files, is_remote=false) {
         var base_vmdk = -1;
-        for (var i = 0, f; f = files[i]; i++) {
-            jshell.files[i] = f;
-            if (f.name.match(/\.vmdk/i) && !f.name.match(/\-s\d{3}\.vmdk/i)) {
-                base_vmdk = i;
+        if (is_remote) {
+            jshell.files[0] = { 'is_remote': true, 'file': files, 'name': files };
+        } else {
+            for (var i = 0, f; f = files[i]; i++) {
+                jshell.files[i] = {'is_remote':false, 'file':f, 'name':f.name};
+                if (f.name.match(/\.vmdk/i) && !f.name.match(/\-s\d{3}\.vmdk/i)) {
+                    base_vmdk = i;
+                }
+            }
+            if (jshell.files.length > 1 && base_vmdk != -1) {
+                /* only supported case now is multi-file vmdk */
+                var tmp = jshell.files[0];
+                jshell.files[0] = {'is_remote': false, 'file': jshell.files[base_vmdk], 'name':jshell.files[base_vmdk].name};
+                jshell.files[base_vmdk] = {'is_remote': false, 'file': tmp, 'name':tmp.name };
             }
         }
-        if (jshell.files.length > 1 && base_vmdk != -1) {
-            /* only supported case now is multi-file vmdk */
-            var tmp = jshell.files[0];
-            jshell.files[0] = jshell.files[base_vmdk];
-            jshell.files[base_vmdk] = tmp;
+    }
+
+    function handleRemoteFileSelect(evt) {
+        evt.stopPropagation();
+        evt.preventDefault();
+        var values = {};
+        var is_ok = true;
+        $.each($(this).serializeArray(), function(i, field) {
+            values[field.name] = field.value;
+        });
+
+        $.ajax({ url:values['remote_file'], async:false}).fail( function() {
+                alert("Failed to access given url:" + values['remote_file']);
+                is_ok = false;
+            });
+
+        if (is_ok) {
+            setFiles(values['remote_file'], is_remote=true);
+            $('<p>Exploring ' + jshell.files[0].name + '..</p>').appendTo($('#msg'));
+            updateFinder();
         }
     }
 
@@ -300,6 +325,7 @@ function setupListeners() {
     }
 
     $('#files_input').change(handleFormFileSelect);
+    $('#remote_file_form').submit(handleRemoteFileSelect);
     document.getElementById('linux-container').addEventListener('drop', handleFileSelect, false);
     document.getElementById('linux-container').addEventListener('dragover', handleDragOver, false);
     document.getElementById('elfinder-container').addEventListener('drop', handleFileSelect, false);

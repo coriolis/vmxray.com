@@ -2,15 +2,15 @@
  * TL;DR: 2-clause BSD
  *
  * Copyright (c) 2011, Coriolis Technologies Pvt Ltd. All rights reserved.
- * 
+ *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
  * 1. Redistributions of source code must retain the above copyright notice,
  *    this list of conditions and the following disclaimer.
  * 2. Redistributions in binary form must reproduce the above copyright notice,
  *    this list of conditions and the following disclaimer in the documentation
- *    and/or other materials provided with the distribution.  
- * 
+ *    and/or other materials provided with the distribution.
+ *
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
  * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
  * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
@@ -22,11 +22,11 @@
  * CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
  * POSSIBILITY OF SUCH DAMAGE.
- * 
+ *
  */
 
 var include = function (filename) {
-    document.write('<script type="text/javascript" src="' + filename + 
+    document.write('<script type="text/javascript" src="' + filename +
         '"><' + '/script>');
 }
 include('js/util.js');
@@ -125,7 +125,7 @@ EFBridge.prototype.parents = function(hash) {
 		var parents = [],
 			dir,
             dfrd = $.Deferred();
-		
+
         if (!(hash in this.cache)) {
             dfrd.reject('orphan');
             return dfrd;
@@ -177,9 +177,9 @@ EFBridge.prototype.opendone = function(target, dfrd, result) {
                 else
                     partdesc = parts[p].desc;
                 var file = {
-                    name: 'Part ' + this.cache['Partitions'].length + ' ' + parseSize(parts[p].len) + ' ' + partdesc, 
+                    name: 'Part ' + this.cache['Partitions'].length + ' ' + parseSize(parts[p].len) + ' ' + partdesc,
                     hash: 'p' + parts[p].start,
-                    mime: 'directory', phash: cwd.hash, 
+                    mime: 'directory', phash: cwd.hash,
                     size: parts[p].len, read: 1, write: 1, locked: 0};
 
                 files.push(file);
@@ -285,17 +285,17 @@ EFBridge.prototype.open = function(target) {
         dfrd.resolve(ret);
         return dfrd;
     }
-        
+
     var image = jshell.files[0].name;
     var ext = image.slice(image.lastIndexOf('.') + 1);
     var opt = EFBridge.sleuthkit_opts[ext.toLowerCase()] || ['-a'];
     var cmd = opt.slice();
-    
+
     if(target.slice(0, 1) == 'p') {
         cmd.push('-P');
         cmd.push(target.slice(1));
     }else if (target != 'ROOT') {
-        cmd.push('-I'); 
+        cmd.push('-I');
         cmd.push(target.slice(1));
     }
     cmd.push.apply(cmd, ['-l', image]);
@@ -324,15 +324,20 @@ EFBridge.prototype.getdone = function(target, dfrd, result) {
     if (result.length < EFBridge.CACHE_FILEDATA_MAX) {
         this.cache[target].data = result;
     }
-    
+
     dfrd.resolve({content: result});
 }
 
 EFBridge.prototype.get = function(target) {
     var dfrd = $.Deferred();
- 
+
+    var image = jshell.files[0].name;
+    var ext = image.slice(image.lastIndexOf('.') + 1);
+    var opt = EFBridge.sleuthkit_opts[ext.toLowerCase()] || [];
+
     if (target == 'osinfo' && !this.cache[target]) {
-        var h = {name: "osinfo", hash: "osinfo", phash: "", date: "30 Jan 2010 14:25", mime: "text/html", size: 1024, read: 1, write: 1, locked: 0, volumeid: jshell.files[0].name};
+        var h = {name: "osinfo", hash: "osinfo", phash: "", date: "30 Jan 2010 14:25", mime: "text/html", size: 1024, read: 1, write: 1, locked: 0,
+                        volumeid: image};
         this.cache[target] = $.extend(true, {}, h);
     }
 
@@ -354,18 +359,14 @@ EFBridge.prototype.get = function(target) {
         dfrd.resolve({content: ct.data});
         return dfrd;
     }
- 
-    var image = jshell.files[0].name,
-        ext = image.slice(image.lastIndexOf('.') + 1),
-        opt = EFBridge.sleuthkit_opts[ext.toLowerCase()] || [];
-    
+
     //if its directory use -e
-    if (!ct || ct.mime == 'directory') 
+    if (!ct || ct.mime == 'directory')
        var gopt = ['-e', this.cache[target].name + ".zip", '-I', target.slice(1)];
     else
        var gopt = (target == 'osinfo') ? ['-t'] : ['-c', '-I', target.slice(1)];
 
-    var cmd = gopt.slice().concat(opt, [image]); 
+    var cmd = gopt.slice().concat(opt, [image]);
 
     //Util.Debug('>>EFB get ' + cmd);
     var jshd = jshell.cmd(cmd)
@@ -524,7 +525,7 @@ function osinfo_convert(slt)
                 osinfo['rows'].push([key, info[key]]);
             }
         }
-        
+
     } else {
         osinfo['title'] = "Unknown OS";
     }
